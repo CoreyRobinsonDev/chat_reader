@@ -5,7 +5,7 @@ import { initBrowser } from "./scrape.ts";
 import { Resp } from "./util.ts";
 
 
-export const BROWSER: Browser = (await initBrowser()).unwrap()
+export const BROWSER: Browser = await (await initBrowser()).unwrap()
 const routes: Route[] = [
 	{
 		method: ["GET"],

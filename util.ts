@@ -1,4 +1,13 @@
 export const Resp = {
+	Ok(msg?: string): Response {
+		return new Response(
+			JSON.stringify({
+				status: 200,
+				message: msg ?? "Ok",
+			}), 
+			{status: 200}
+		)
+	},
 	BadRequest(msg?: string): Response {
 		return new Response(
 			JSON.stringify({

@@ -8,7 +8,7 @@ const CONFIG: LaunchOptions = {
 	args: ["--no-sandbox", "--disable-setuid-sandbox"],
 	defaultViewport: { width: 1980, height: 1024 },
 	slowMo: 50, 
-	executablePath: "/usr/bin/google-chrome-stable",
+	executablePath: executablePath(),
 	headless: false, 
 }
 
@@ -43,30 +43,28 @@ export async function goto(browser: Browser, site: string): Promise<Result<Page>
 
 
 export async function checkIfOnline(browser: Browser, platfrom: string, streamer: string): Promise<boolean> {
-	const channelPage = await browser.newPage()
 	switch(platfrom) {
-	case "kick":
+	case "kick": {
+		const page = await (await goto(browser, `https://kick.com/${streamer}`)).unwrap()
 		try {
-			await channelPage.goto(`https://kick.com/${streamer}`, {
-				waitUntil: "networkidle2"
-			})
-		} catch(_) { return false }
-		try {
-			const offline = await channelPage.$eval("h2", h2 => {
+			const offline = await page.$eval("h2", h2 => {
 				return h2.textContent
 			})
-			// instead of reaturning undefined it returns this specific string of text, imagine
+			await page.close()
 			if (offline === "Oops, something went wrong") {
-				await channelPage.close()
+				return false
+			} else if (offline === `${streamer} is offline`) {
+				return false
+			} else {
+				// NOTE: I'm guessing here, might need to more conditions
 				return false
 			}
-			await channelPage.close()
-			return !offline?.includes("offline")
 		} catch(_) {
-			await channelPage.close()
+			await page.close()
 			// true because it throws when the streamer is online
 			return true
 		}
+	}
 	default:
 		return false
 	}

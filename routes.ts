@@ -13,18 +13,30 @@ export async function getKickChat(
 	if (!streamer) return Resp.BadRequest("No Kick streamer provided")
 	const isOnline = await checkIfOnline(BROWSER, "kick", streamer)
 	if (!isOnline) return Resp.BadRequest(`Kick streamer ${streamer} is offline or doesn't exist`)
-
-	const page = (await goto(BROWSER, `https://kick.com/${streamer}/chatroom`)).unwrap()
+	const page = await goto(BROWSER, `https://kick.com/${streamer}/chatroom`)
+	if (page.hasErr()) {
+		return Resp.InternalServerError(page.err!.message)
+	}
 
 	const body = new ReadableStream({
 		start(controller) {
-			timer = setInterval(() => {
-				controller.enqueue("Hello, World!")
+			controller.enqueue(JSON.stringify({
+				status: 200,
+				message: `Connected to ${streamer} chatroom...`
+			}))
+			timer = setInterval(async () => {
+				const chat = await (await page.unwrap()).$$eval("div.chat-entry", (chats) => {
+					return chats.map(chat => chat.innerHTML)				
+				})
+				controller.enqueue(JSON.stringify({
+					status: 200,
+					message: chat
+				}))
 			}, 1000)
 		},
 		async cancel() {
 			clearInterval(timer)
-			await page.close()
+			await (await page.unwrap()).close()
 		}
 	})
 	

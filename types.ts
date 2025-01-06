@@ -1,3 +1,5 @@
+import { BROWSER } from "./main.ts";
+
 export function Ok<T>(result: T): Result<T> {
 	return new Result(result, undefined)
 }
@@ -7,34 +9,41 @@ export function Err<T>(msg: string): Result<T> {
 }
 
 export class Result<T> {
-	private ok: T | undefined
-	private err: Error | undefined
+	ok: T | undefined
+	err: Error | undefined
 
 	constructor(ok: T | undefined, err: Error | undefined) {
 		this.ok = ok
 		this.err = err
 	}
 
-	unwrap(): T {
+	async unwrap(): Promise<T> {
 		if (typeof this.ok === "undefined" && this.err) {
 			console.error(this.err.message)
+			await BROWSER.close()
 			Deno.exit(1)
 		} else if (typeof this.ok === "undefined" && !this.err) {
 			console.error("An unwrap occured on an empty Result")
+			await BROWSER.close()
 			Deno.exit(1)
 		} else {
 			return this.ok!
 		}
 	}
 
-	unwrapOr(or: T): T {
+	async unwrapOr(or: T): Promise<T> {
 		if (typeof this.ok === "undefined" && this.err) {
 			return or
 		} else if (typeof this.ok === "undefined" && !this.err) {
 			console.error("An unwrap occured on an empty Result")
+			await BROWSER.close()
 			Deno.exit(1)
 		} else {
 			return this.ok!
 		}
+	}
+
+	hasErr(): boolean {
+		return !!this.err && !this.ok
 	}
 }
