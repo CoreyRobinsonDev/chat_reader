@@ -46,13 +46,17 @@ export async function checkIfOnline(browser: Browser, platfrom: string, streamer
 	const channelPage = await browser.newPage()
 	switch(platfrom) {
 	case "kick":
-		await channelPage.goto(`https://kick.com/${streamer}`, {
-			waitUntil: "networkidle2"
-		})
+		try {
+			await channelPage.goto(`https://kick.com/${streamer}`, {
+				waitUntil: "networkidle2"
+			})
+		} catch(_) { return false }
 		try {
 			const offline = await channelPage.$eval("h2", h2 => {
 				return h2.textContent
 			})
+			// instead of reaturning undefined it returns this specific string of text, imagine
+			if (offline === "Oops, something went wrong") return false
 			await channelPage.close()
 			return !offline?.includes("offline")
 		} catch(_) {
