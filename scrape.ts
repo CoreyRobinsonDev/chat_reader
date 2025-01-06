@@ -56,11 +56,15 @@ export async function checkIfOnline(browser: Browser, platfrom: string, streamer
 				return h2.textContent
 			})
 			// instead of reaturning undefined it returns this specific string of text, imagine
-			if (offline === "Oops, something went wrong") return false
+			if (offline === "Oops, something went wrong") {
+				await channelPage.close()
+				return false
+			}
 			await channelPage.close()
 			return !offline?.includes("offline")
 		} catch(_) {
 			await channelPage.close()
+			// true because it throws when the streamer is online
 			return true
 		}
 	default:
