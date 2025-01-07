@@ -1,7 +1,8 @@
-import { executablePath, type LaunchOptions, type Browser, Page } from "npm:puppeteer@^23.11.1"
-import puppeteer from "npm:puppeteer-extra@^3.3.6"
-import stealthPlugin from "npm:puppeteer-extra-plugin-stealth@^2.11.2"
-import { Err, Ok, Result } from "./types.ts";
+import { Browser, executablePath, Page, type LaunchOptions } from "puppeteer";
+import stealthPlugin from "puppeteer-extra-plugin-stealth"
+import puppeteer from "puppeteer-extra"
+import { Err, match, Ok, Result } from "./types.ts";
+
 
 const MAX_TIMEOUT: number = 10_000
 const CONFIG: LaunchOptions = {
@@ -45,7 +46,11 @@ export async function goto(browser: Browser, site: string): Promise<Result<Page>
 export async function checkIfOnline(browser: Browser, platfrom: string, streamer: string): Promise<boolean> {
 	switch(platfrom) {
 	case "kick": {
-		const page = await (await goto(browser, `https://kick.com/${streamer}`)).unwrap()
+		const page: Page | undefined = match<Page>(await goto(browser, `https://kick.com/${streamer}`), {
+			Ok: (val) => val,
+			Err: (_) => undefined
+		})
+		if (typeof page === "undefined") return false
 		try {
 			const offline = await page.$eval("h2", h2 => {
 				return h2.textContent

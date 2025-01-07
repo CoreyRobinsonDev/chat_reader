@@ -1,34 +1,41 @@
-import { type Route, route } from "jsr:@std/http/unstable-route"
-import { type Browser } from "npm:puppeteer@^23.11.1";
+import UrlPattern from "url-pattern"
 import { getKickChat } from "./routes.ts";
 import { initBrowser } from "./scrape.ts";
-import { Resp } from "./util.ts";
+import { Resp, router } from "./util.ts";
+import type { Browser } from "puppeteer";
+import { match, type Route } from "./types.ts";
 
 
-export const BROWSER: Browser = await (await initBrowser()).unwrap()
+export const BROWSER: Browser = match<Browser>(await initBrowser(), {
+	Ok: (val) => val,
+	Err: (e) => console.error(e.message)
+})
+
 const routes: Route[] = [
 	{
 		method: ["GET"],
-		pattern: new URLPattern({pathname: "/kick/:streamer"}),
-		// @ts-ignore: TS doesn't like that I'm asking for more info to be passed, Deno doesn't care
+		pattern: new UrlPattern("/kick/:streamer"),
 		handler: getKickChat
-	}
+	},
 ]
 
+const s = Bun.serve({
+	idleTimeout: 20,
+	fetch(req, server) {
+		return router(req, server, routes, defaultHandler)
+	}
+})
 
 function defaultHandler(req: Request): Response {
 	return Resp.NotFound(`${URL.parse(req.url)?.pathname} Not Found`)
 }
 
-Deno.serve(route(routes, defaultHandler))
-
-
-
 // shutdown on ctrl-c
-Deno.addSignalListener("SIGINT", async () => {
+process.on("SIGINT", async () => {
 	await BROWSER.close()
-	Deno.exit(0)
 })
 
 
 
+
+console.log(`Listening on ${s.url}`)
