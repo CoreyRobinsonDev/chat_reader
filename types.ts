@@ -2,6 +2,22 @@ import type UrlPattern from "url-pattern";
 import { BROWSER } from "./main.ts";
 import type { Server } from "bun";
 
+export type Option<T> = T | undefined
+
+export enum Platform {
+	KICK,
+	TWITCH,
+	TWITTER,
+	YOUTUBE
+}
+
+export enum Code {
+	OK,
+	CON,
+	MSG,
+	ERR
+} 
+
 export function Ok<T>(result: T): Result<T> {
 	return new Result(result, undefined)
 }

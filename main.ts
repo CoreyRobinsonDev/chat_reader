@@ -1,11 +1,12 @@
 import UrlPattern from "url-pattern"
 import { getKickChat } from "./routes.ts";
 import { initBrowser } from "./scrape.ts";
-import { Resp, router } from "./util.ts";
+import { Resp, router, Tab, TabController } from "./util.ts";
 import type { Browser } from "puppeteer";
 import { match, type Route } from "./types.ts";
 
 
+export const TC: TabController = new TabController()
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 	Ok: (val) => val,
 	Err: (e) => console.error(e.message)
