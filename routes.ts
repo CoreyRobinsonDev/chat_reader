@@ -1,6 +1,5 @@
 import type { Server } from "bun";
-import { BROWSER, TC } from "./main.ts";
-import { checkIfOnline, goto } from "./scrape.ts";
+import { TC } from "./main.ts";
 import { diff, Resp, Tab } from "./util.ts";
 import { Code, Platform } from "./types.ts";
 
