@@ -59,7 +59,7 @@ export class TabController {
 		tab.listeners--	
 		if (tab.listeners <= 0) {
 			match(tab.page!, {
-				Ok: (p) => p.close(),
+				Ok: async (p) => await p.close(),
 				Err: () => {}
 			})
 			this.tabs = this.tabs.filter(t => t.streamer !== tab.streamer)

@@ -28,7 +28,12 @@ const s = Bun.serve({
 })
 
 function defaultHandler(req: Request): Response {
-	return Resp.NotFound(`${URL.parse(req.url)?.pathname} Not Found`)
+	try {
+		return Resp.NotFound(`${URL.parse(req.url)?.pathname} Not Found`)
+	} catch(e) {
+		console.error(e)
+		return Resp.InternalServerError()
+	}
 }
 
 // shutdown on ctrl-c
