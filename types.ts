@@ -2,6 +2,14 @@ import type UrlPattern from "url-pattern";
 import { BROWSER } from "./main.ts";
 import type { Server } from "bun";
 
+export type Chat = {
+	badgeName?: string, 
+	badgeImg?: string,
+	userName: string,
+	userColor: number[],
+	content: string,
+	emoteContaner?: {[U: string]: string}[]
+}
 
 export type Option<T> = T | undefined
 

@@ -37,8 +37,8 @@ export async function getKickChat(
 					code: Code.CON,
 					message: `Connected to ${streamer} chatroom...`
 				}))
-				let chat: any = []
-				let prevChat: any = []
+				let chat: Chat[] = []
+				let prevChat: Chat[] = []
 				timer = setInterval(async () => {
 					try {
 						chat = await tab.page?.unwrap().$$eval("div.chat-entry > div", chats => {
@@ -72,8 +72,7 @@ export async function getKickChat(
 											content += " " + emoteName
 										} else { content += emoteName }
 										if (typeof emoteName === "string") {
-											//@ts-ignore: ts doesn't know what ^this^ means
-											emoteContainer[emoteName] = emoteSrc
+											emoteContainer[emoteName] = emoteSrc ?? "ERR"
 										}
 									} else if (className === "chat-entry-content") {
 										if (content.length > 0) {
@@ -86,22 +85,22 @@ export async function getKickChat(
 
 
 								return {
-									badgeName,
-									badgeImg,
-									userName,
-									userColor,
+									badgeName: badgeName ? badgeName : undefined,
+									badgeImg: badgeImg ? badgeImg : undefined,
+									userName: userName ? userName : "ERR",
+									userColor: userColor ? userColor : [0,0,0],
 									content,
-									emoteContainer
+									emoteContainer 
 								}
 							})
-						})
+						}) ?? []
 						console.log(chat)
 					} catch(e: any) {
 						console.error(e.message)
 					}
-					const diffChats = diff(prevChat.map(el => el.content), chat.map(el => el.content))
-					prevChat = chat ?? []
-					chat = chat.filter(el => diffChats.includes(el.content))
+					const diffChatContent = diff(prevChat.map(el => el.content), chat.map(el => el.content))
+					prevChat = chat
+					chat = chat.filter(el => diffChatContent.includes(el.content))
 					try {
 						// TODO: Research the following error on client exit:
 						// Can only call ReadableStreamDefaultController.enqueue on instances of ReadableStreamDefaultController
