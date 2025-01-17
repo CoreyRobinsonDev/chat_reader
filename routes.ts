@@ -1,7 +1,7 @@
 import type { Server } from "bun";
 import { TC } from "./main.ts";
 import { diff, Resp, Tab } from "./util.ts";
-import { Code, Platform } from "./types.ts";
+import { Code, Platform, type Chat } from "./types.ts";
 
 export async function getKickChat(
 	req: Request,
@@ -37,7 +37,8 @@ export async function getKickChat(
 					code: Code.CON,
 					message: `Connected to ${streamer} chatroom...`
 				}))
-				let chat: any
+				let chat: any = []
+				let prevChat: any = []
 				timer = setInterval(async () => {
 					try {
 						chat = await tab.page?.unwrap().$$eval("div.chat-entry > div", chats => {
@@ -83,6 +84,7 @@ export async function getKickChat(
 									}
 								}
 
+
 								return {
 									badgeName,
 									badgeImg,
@@ -94,12 +96,12 @@ export async function getKickChat(
 							})
 						})
 						console.log(chat)
-					} catch(_) {
-						console.error("Puppeteer Error Occurred")
+					} catch(e: any) {
+						console.error(e.message)
 					}
-					// const diffChats = diff(prevChat, chat ?? [])
-					// prevChat = chat ?? []
-					// chat = diffChats
+					const diffChats = diff(prevChat.map(el => el.content), chat.map(el => el.content))
+					prevChat = chat ?? []
+					chat = chat.filter(el => diffChats.includes(el.content))
 					try {
 						// TODO: Research the following error on client exit:
 						// Can only call ReadableStreamDefaultController.enqueue on instances of ReadableStreamDefaultController
