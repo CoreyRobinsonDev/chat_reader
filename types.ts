@@ -8,7 +8,7 @@ export type Chat = {
 	userName: string,
 	userColor: number[],
 	content: string,
-	emoteContaner?: {[U: string]: string}[]
+	emoteContaner?: {[U: string]: string}
 }
 
 export type Option<T> = T | undefined

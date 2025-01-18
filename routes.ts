@@ -58,11 +58,7 @@ export async function getKickChat(
 									})
 								const contentHTML = el.querySelector(".font-bold.text-white + span")?.children
 								let content = ""
-								let emoteContainer: {
-									[U: string]: string
-								} = {
-
-								}
+								let emoteContainer: Chat["emoteContaner"] = {}
 								for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
 									const className = contentHTML?.item(i)?.querySelector(".chat-emote-container, .chat-entry-content")?.className
 									if (className === "chat-emote-container") {
@@ -94,7 +90,6 @@ export async function getKickChat(
 								}
 							})
 						}) ?? []
-						console.log(chat)
 					} catch(e: any) {
 						console.error(e.message)
 					}
