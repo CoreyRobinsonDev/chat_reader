@@ -9,8 +9,9 @@ export async function getKickChat(
 	server?: Server
 ) {
 	let timer: Timer
-	console.log(server?.requestIP(req))
 	const streamer = params.streamer
+	const user = `${server?.requestIP(req)?.address}:${server?.requestIP(req)?.port}`
+	console.log(`[${user}] GET /kick/${streamer}`)
 	let chatStream: ReadableStream<any>
 	let tab: Tab
 	try {
@@ -21,6 +22,7 @@ export async function getKickChat(
 					code: Code.CON,
 					message: `Connecting to ${streamer} chatroom...`
 				}))
+				console.log(`[${user}] Connecting to ${streamer} chatroom...`)
 
 				tab = await TC.connectTab(Platform.KICK, streamer)
 				if (tab.page?.isErr()) {
@@ -29,6 +31,7 @@ export async function getKickChat(
 						code: Code.ERR,
 						message: tab.page.unwrapErr().message
 					}))
+					console.log(`[${user}] ${tab.page.unwrapErr().message}`)
 					controller.close()
 					TC.leaveTab(tab)
 				}
@@ -37,6 +40,7 @@ export async function getKickChat(
 					code: Code.CON,
 					message: `Connected to ${streamer} chatroom...`
 				}))
+				console.log(`[${user}] Connected to ${streamer} chatroom...`)
 				let chat: Chat[] = []
 				let prevChat: Chat[] = []
 				timer = setInterval(async () => {
@@ -110,11 +114,13 @@ export async function getKickChat(
 				}, 1000)
 			},
 			cancel() {
+				console.log(`[${user}] Disconnected`)
 				clearInterval(timer)
 				TC.leaveTab(tab)
 			}
 		})
 	} catch(_) {
+		console.log(`[${user}] Server Error`)
 		return Resp.InternalServerError()
 	}
 	
