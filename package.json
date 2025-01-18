@@ -3,6 +3,7 @@
   "module": "main.ts",
   "type": "module",
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.0",
     "@types/bun": "latest"
   },
   "peerDependencies": {
