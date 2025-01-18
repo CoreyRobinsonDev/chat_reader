@@ -10,7 +10,7 @@ const CONFIG: LaunchOptions = {
 	defaultViewport: { width: 1980, height: 1024 },
 	slowMo: 50, 
 	executablePath: executablePath(),
-	headless: false, 
+	headless: true, 
 }
 
 
