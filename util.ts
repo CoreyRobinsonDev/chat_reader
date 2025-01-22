@@ -1,39 +1,6 @@
 import { Code } from "./types";
 
 
-
-export function diff(arr1: string[], arr2: string[]): string[] {
-	const diffResult: {
-		added: string[];
-		removed: string[];
-		unchanged: string[];
-	} = {
-		added: [],
-		removed: [],
-		unchanged: [],
-	};
-	const visited = new Set<number>();
-
-	for (const el of arr1) {
-		const idx = arr2.findIndex((el, idx) => el === el && !visited.has(idx));
-		if (idx !== -1) {
-			diffResult.unchanged.push(el);
-		  	visited.add(idx);
-		} else {
-		  	diffResult.removed.push(el);
-		}
-	}
-
-	arr2.forEach((el, idx) => {
-		if (!visited.has(idx)) {
-		  	diffResult.added.push(el);
-		}
-	});
-
-	return diffResult.added;
-}
-
-
 export const Resp = {
 	Ok(msg?: string): Response {
 		return new Response(

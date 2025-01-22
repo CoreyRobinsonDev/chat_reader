@@ -22,7 +22,6 @@ const s = Bun.serve<WebSocketData>({
 		})) {
 			return Resp.InternalServerError("Upgrade failed")
 		}
-
 	},
 	websocket: {
 		message(ws) {
@@ -60,10 +59,11 @@ const s = Bun.serve<WebSocketData>({
 			case Platform.KICK:
 				const site = `https://kick.com/${streamer}/chatroom`
 				const page = await goto(BROWSER, site)
-				let prevChatLength = 0 
+				let lastUsername = "" 
 
 				if (page.isErr()) {
 					ws.unsubscribe(platform+streamer)
+					console.log(`[${user}] has disconnected`)
 					ws.close(SocketCode.InternalServerError, `Error on visiting ${site}`)
 					return
 				}
@@ -72,19 +72,17 @@ const s = Bun.serve<WebSocketData>({
 					if (chat.isErr()) {
 						await page.unwrap().close()
 						ws.unsubscribe(platform+streamer)
+						console.log(`[${user}] has disconnected`)
 						ws.close(SocketCode.InternalServerError, `Error on scraping ${site}`)
 						return
 					}
-					if (prevChatLength === 0) {
-						s.publish(platform+streamer, JSON.stringify(
-							chat.unwrap()
-						))
+					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername)
+					if (idx === -1) {
+						s.publish(platform+streamer, JSON.stringify(chat.unwrap()))
 					} else {
-						s.publish(platform+streamer, JSON.stringify(
-							chat.unwrap().slice(0, chat.unwrap().length - prevChatLength)
-						))
+						s.publish(platform+streamer, JSON.stringify(chat.unwrap().slice(0, idx)))
 					}
-					prevChatLength = chat.unwrap().length
+					lastUsername = chat.unwrap()[0].userName
 					await Bun.sleep(1000)
 				}
 				await page.unwrap().close()

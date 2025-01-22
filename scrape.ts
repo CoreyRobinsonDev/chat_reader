@@ -69,7 +69,7 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 		return Err(e.message)
 	}
 
-	return Ok(chat)
+	return Ok(chat.reverse())
 }
 
 export async function initBrowser(): Promise<Result<Browser>> {
