@@ -1,7 +1,7 @@
 import { Browser, executablePath, Page, type LaunchOptions } from "puppeteer";
 import stealthPlugin from "puppeteer-extra-plugin-stealth"
 import puppeteer from "puppeteer-extra"
-import { Err, match, Ok, Platform, Result } from "./types.ts";
+import { Err, match, Ok, Platform, Result, type Chat } from "./types.ts";
 
 
 const MAX_TIMEOUT: number = 10_000
@@ -10,9 +10,67 @@ const CONFIG: LaunchOptions = {
 	defaultViewport: { width: 1980, height: 1024 },
 	slowMo: 50, 
 	executablePath: executablePath(),
-	headless: true, 
+	headless: false, 
 }
 
+export async function kick(page: Page): Promise<Result<Chat[]>> {
+	let chat: Chat[]
+	try {
+	chat = await page.$$eval("div.chat-entry > div", chats => {
+		return chats.map(el => {
+			const badgeImg = el.querySelector("img.icon")?.getAttribute("src")
+			const badgeName = el.querySelector("img.icon")?.getAttribute("alt")
+			const userName = el.querySelector(".chat-entry-username")?.textContent
+			const userColor = el.querySelector(".chat-entry-username")?.getAttribute("style")
+				?.split("(").at(-1)
+				?.split(",")
+				.slice(0, 3)
+				.map((el, idx) => {
+					if (idx === 2) {
+						return Number(el.trim().split(")")[0])
+					}
+					return Number(el.trim())
+				})
+			const contentHTML = el.querySelector(".font-bold.text-white + span")?.children
+			let content = ""
+			let emoteContainer: Chat["emoteContaner"] = {}
+			for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
+				const className = contentHTML?.item(i)?.querySelector(".chat-emote-container, .chat-entry-content")?.className
+				if (className === "chat-emote-container") {
+					const emoteName = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("alt")
+					const emoteSrc = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("src")
+					if (content.length > 0) {
+						content += " " + emoteName
+					} else { content += emoteName }
+					if (typeof emoteName === "string") {
+						emoteContainer[emoteName] = emoteSrc ?? "ERR"
+					}
+				} else if (className === "chat-entry-content") {
+					if (content.length > 0) {
+						content += " " + contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
+					} else {
+						content += contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
+					}
+				}
+			}
+
+
+			return {
+				badgeName: badgeName ? badgeName : undefined,
+				badgeImg: badgeImg ? badgeImg : undefined,
+				userName: userName ? userName : "ERR",
+				userColor: userColor ? userColor : [0,0,0],
+				content,
+				emoteContainer 
+			}
+		})
+	}) ?? []
+	} catch(e: any) {
+		return Err(e.message)
+	}
+
+	return Ok(chat)
+}
 
 export async function initBrowser(): Promise<Result<Browser>> {
 	puppeteer.use(stealthPlugin())

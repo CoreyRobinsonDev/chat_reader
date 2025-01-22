@@ -1,40 +1,104 @@
-import UrlPattern from "url-pattern"
-import { getKickChat } from "./routes.ts";
-import { initBrowser } from "./scrape.ts";
-import { Resp, router, Tab, TabController } from "./util.ts";
+import { checkIfOnline, goto, initBrowser, kick } from "./scrape.ts";
+import { Resp } from "./util.ts";
 import type { Browser } from "puppeteer";
-import { match, type Route } from "./types.ts";
+import { match, SocketCode, type WebSocketData, Platform } from "./types.ts";
 
 
-export const TC: TabController = new TabController()
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 	Ok: (val) => val,
 	Err: (e) => console.error(e.message)
 })
 
-const routes: Route[] = [
-	{
-		method: ["GET"],
-		pattern: new UrlPattern("/kick/:streamer"),
-		handler: getKickChat
-	},
-]
 
-const s = Bun.serve({
-	idleTimeout: 20,
+const s = Bun.serve<WebSocketData>({
+	idleTimeout: 30,
 	fetch(req, server) {
-		return router(req, server, routes, defaultHandler)
+		if (!server.upgrade(req, {
+			data: {
+				streamer: new URL(req.url).searchParams.get("streamer"),
+				platform: new URL(req.url).searchParams.get("platform")?.toUpperCase(),
+				userIp: server.requestIP(req)?.address
+			}
+		})) {
+			return Resp.InternalServerError("Upgrade failed")
+		}
+
+	},
+	websocket: {
+		message(ws) {
+			ws.close(SocketCode.MessageProhibited, "Message Prohibited")	
+		},
+		async open(ws) {
+			const user = ws.data.userIp
+			const streamer = ws.data.streamer
+			const platform = ws.data.platform
+			console.log(`[${user}] has connected`)
+
+			if (!streamer) {
+				console.log(`[${user}] has disconnected`)
+				ws.close(SocketCode.BadRequest, `No Streamer Provided`)
+				return
+			} else if (!(platform in Platform)) {
+				console.log(`[${user}] has disconnected`)
+				ws.close(SocketCode.BadRequest, `Invalid Plaform: ${ws.data.platform}`)
+				return
+			}
+			
+			console.log(`[${user}] /kick/${streamer}`)
+
+			ws.subscribe(platform+streamer)
+			if (s.subscriberCount(platform+streamer) > 1) return
+
+			const isOnline = await checkIfOnline(BROWSER, platform, streamer)
+			if (!isOnline) {
+				console.log(`[${user}] has disconnected`)
+				ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+				return
+			}
+
+			switch (platform) {
+			case Platform.KICK:
+				const site = `https://kick.com/${streamer}/chatroom`
+				const page = await goto(BROWSER, site)
+				let prevChatLength = 0 
+
+				if (page.isErr()) {
+					ws.unsubscribe(platform+streamer)
+					ws.close(SocketCode.InternalServerError, `Error on visiting ${site}`)
+					return
+				}
+				while (s.subscriberCount(platform+streamer) > 0) {
+					const chat = await kick(page.unwrap())
+					if (chat.isErr()) {
+						await page.unwrap().close()
+						ws.unsubscribe(platform+streamer)
+						ws.close(SocketCode.InternalServerError, `Error on scraping ${site}`)
+						return
+					}
+					if (prevChatLength === 0) {
+						s.publish(platform+streamer, JSON.stringify(
+							chat.unwrap()
+						))
+					} else {
+						s.publish(platform+streamer, JSON.stringify(
+							chat.unwrap().slice(0, chat.unwrap().length - prevChatLength)
+						))
+					}
+					prevChatLength = chat.unwrap().length
+					await Bun.sleep(1000)
+				}
+				await page.unwrap().close()
+			}
+
+		},
+		async close(ws) {
+			ws.unsubscribe(ws.data.platform+ws.data.streamer)
+			console.log(`[${ws.data.userIp}] has disconnected`)
+		}
 	}
 })
 
-function defaultHandler(req: Request): Response {
-	try {
-		return Resp.NotFound(`${URL.parse(req.url)?.pathname} Not Found`)
-	} catch(e) {
-		console.error(e)
-		return Resp.InternalServerError()
-	}
-}
+
 
 // shutdown on ctrl-c
 process.on("SIGINT", async () => {

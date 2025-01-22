@@ -1,6 +1,10 @@
-import type UrlPattern from "url-pattern";
 import { BROWSER } from "./main.ts";
-import type { Server } from "bun";
+
+export type WebSocketData = {
+	streamer: string
+	platform: Platform
+	userIp: string
+}
 
 export type Chat = {
 	badgeName?: string, 
@@ -14,10 +18,16 @@ export type Chat = {
 export type Option<T> = T | undefined
 
 export enum Platform {
-	KICK,
-	TWITCH,
-	TWITTER,
-	YOUTUBE
+	KICK = "KICK",
+	TWITCH = "TWITCH",
+	TWITTER = "TWITTER",
+	YOUTUBE = "YOUTUBE"
+}
+
+export enum SocketCode {
+	MessageProhibited = 4000,
+	BadRequest = 4001,
+	InternalServerError = 1011
 }
 
 export enum Code {
@@ -92,9 +102,3 @@ export class Result<T> {
 	}
 }
 
-export type Method = "GET" | "POST" | "PUT" | "DELETE"
-export type Route = {
-	method: Method[],
-	pattern: UrlPattern,
-	handler: (req: Request, param?: any, server?: Server) => Promise<Response>
-}
