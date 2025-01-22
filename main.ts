@@ -48,12 +48,6 @@ const s = Bun.serve<WebSocketData>({
 			ws.subscribe(platform+streamer)
 			if (s.subscriberCount(platform+streamer) > 1) return
 
-			const isOnline = await checkIfOnline(BROWSER, platform, streamer)
-			if (!isOnline) {
-				console.log(`[${user}] has disconnected`)
-				ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
-				return
-			}
 
 			switch (platform) {
 			case Platform.KICK:
@@ -67,8 +61,16 @@ const s = Bun.serve<WebSocketData>({
 					ws.close(SocketCode.InternalServerError, `Error on visiting ${site}`)
 					return
 				}
+
 				while (s.subscriberCount(platform+streamer) > 0) {
 					const chat = await kick(page.unwrap())
+					if (chat.unwrap().length === 0) {
+						console.log(`[${user}] has disconnected`)
+						ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+						await page.unwrap().close()
+						return
+					}
+
 					if (chat.isErr()) {
 						await page.unwrap().close()
 						ws.unsubscribe(platform+streamer)
