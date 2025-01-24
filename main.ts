@@ -24,6 +24,7 @@ const s = Bun.serve<WebSocketData>({
 		}
 	},
 	websocket: {
+		perMessageDeflate: true,
 		message(ws) {
 			ws.close(SocketCode.MessageProhibited, "Message Prohibited")	
 		},
@@ -80,12 +81,14 @@ const s = Bun.serve<WebSocketData>({
 					}
 					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername)
 					if (idx === -1) {
-						s.publish(platform+streamer, JSON.stringify(chat.unwrap()))
+						if (chat.unwrap().length === 0) continue
+						s.publish(platform+streamer, JSON.stringify(chat.unwrap()), true)
 					} else {
-						s.publish(platform+streamer, JSON.stringify(chat.unwrap().slice(0, idx)))
+						if (chat.unwrap().slice(0, idx).length === 0) continue
+						s.publish(platform+streamer, JSON.stringify(chat.unwrap().slice(0, idx)), true)
 					}
 					lastUsername = chat.unwrap()[0].userName
-					await Bun.sleep(1000)
+					await Bun.sleep(100)
 				}
 				await page.unwrap().close()
 			}

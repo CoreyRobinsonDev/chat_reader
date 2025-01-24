@@ -61,7 +61,7 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 				userName: userName ? userName : "ERR",
 				userColor: userColor ? userColor : [0,0,0],
 				content,
-				emoteContainer 
+				emoteContainer: Object.keys(emoteContainer).length > 0 ? emoteContainer : undefined
 			}
 		})
 	}) ?? []
@@ -69,7 +69,7 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 		return Err(e.message)
 	}
 
-	return Ok(chat.reverse())
+	return Ok(chat.reverse().filter(el => el.userName != "ERR"))
 }
 
 export async function initBrowser(): Promise<Result<Browser>> {
