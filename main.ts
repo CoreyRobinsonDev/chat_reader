@@ -7,7 +7,10 @@ import index from "./frontend/index.html"
 
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
-	Ok: (val) => val,
+	Ok: (val) => {
+		console.log("Browser started")
+		return val
+	},
 	Err: (e) => console.error(e.message)
 })
 
