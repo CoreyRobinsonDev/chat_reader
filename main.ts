@@ -1,7 +1,9 @@
-import { checkIfOnline, goto, initBrowser, kick } from "./scrape.ts";
-import { Resp } from "./util.ts";
+import { goto, initBrowser, kick } from "./backend/scrape.ts";
+import { Resp } from "./backend/util.ts";
 import type { Browser } from "puppeteer";
-import { match, SocketCode, type WebSocketData, Platform } from "./types.ts";
+import { match, SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
+//@ts-ignore: don't know why tsls can't find this
+import index from "./frontend/index.html"
 
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
@@ -11,6 +13,9 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 
 
 const s = Bun.serve<WebSocketData>({
+	static: {
+		"/": index
+	},
 	idleTimeout: 30,
 	fetch(req, server) {
 		if (!server.upgrade(req, {

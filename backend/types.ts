@@ -1,4 +1,4 @@
-import { BROWSER } from "./main.ts";
+import { BROWSER } from "../main.ts";
 
 export type WebSocketData = {
 	streamer: string
