@@ -10,7 +10,7 @@ const CONFIG: LaunchOptions = {
 	defaultViewport: { width: 1980, height: 1024 },
 	slowMo: 50, 
 	executablePath: executablePath(),
-	headless: true, 
+	headless: false, 
 }
 
 export async function kick(page: Page): Promise<Result<Chat[]>> {
@@ -69,7 +69,7 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 		return Err(e.message)
 	}
 
-	return Ok(chat.reverse().filter(el => el.userName != "ERR"))
+	return Ok(chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0))
 }
 
 export async function initBrowser(): Promise<Result<Browser>> {
