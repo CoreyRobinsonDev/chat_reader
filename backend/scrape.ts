@@ -79,8 +79,8 @@ export async function initBrowser(): Promise<Result<Browser>> {
 	try {
 		browser = await puppeteer.launch(CONFIG)
 		return Ok(browser)
-	} catch(_) {
-		return Err("Unhandled error on browser initialization")
+	} catch(e: any) {
+		return Err(e)
 	}
 }
 

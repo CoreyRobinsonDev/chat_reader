@@ -41,7 +41,8 @@ export function Ok<T>(result: T): Result<T> {
 	return new Result(result, undefined)
 }
 
-export function Err<T>(msg: string): Result<T> {
+export function Err<T>(msg: string, error?: Error): Result<T> {
+	if (error) return new Result<T>(undefined, error)
 	return new Result<T>(undefined, new Error(msg))
 }
 
