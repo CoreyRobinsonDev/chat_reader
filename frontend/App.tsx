@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 import type { Chat } from "../backend/types"
+import { createRoot } from "react-dom/client"
+import Test from "./components/Test"
 
 
-export default function App() {
+function App() {
 	const domain = "ws://localhost:3000"
 	//const domain = "https://chat-reader.fly.dev"
 	const [chat, setChat] = useState<Chat[]>()
@@ -31,3 +33,8 @@ export default function App() {
 		return <div>Loading...</div>
 	}
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	const root = createRoot(document.getElementById("root")!)
+	root.render(<Test/>)
+})
