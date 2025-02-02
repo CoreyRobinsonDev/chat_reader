@@ -11,7 +11,7 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 		console.log("Browser started")
 		return val
 	},
-	Err: (e) => console.error(e.message)
+	Err: (e) => console.error(e)
 })
 
 
