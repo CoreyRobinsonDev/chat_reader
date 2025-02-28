@@ -4,8 +4,6 @@
 ARG BUN_VERSION=1.2.0
 FROM oven/bun:${BUN_VERSION}-slim AS base
 
-LABEL fly_launch_runtime="Bun"
-
 # Bun app lives here
 WORKDIR /app
 
