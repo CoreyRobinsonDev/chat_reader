@@ -1,6 +1,5 @@
 import { Code } from "./types";
 
-
 export const Resp = {
 	Ok(msg?: string): Response {
 		return new Response(
