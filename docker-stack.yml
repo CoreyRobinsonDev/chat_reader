@@ -30,7 +30,7 @@ services:
       - letsencrypt:/letsencrypt
     restart: unless-stopped
   web:
-    image: coreyrob/chat_reader:latest
+    image: ghcr.io/coreyrobinsondev/chat_reader:${GIT_COMMIT_HASH:-latest}
     labels:
       - traefik.enable=true
       - traefik.http.routers.mytlsrouter.tls=true
