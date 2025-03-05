@@ -24,7 +24,7 @@ jobs:
         push: true
         tags: |
           ghcr.io/CoreyRobinsonDev/chat_reader:latest
-          ghcr.io/CoreyRobinsonDev/chat_reader:${{ github.sha }}
+          ghcr.io/coreyrobinsondev/chat_reader:${{ github.sha }}
   deploy:
     runs-on: ubuntu-latest
     needs:
