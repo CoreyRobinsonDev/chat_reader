@@ -1,0 +1,42 @@
+name: deploy
+on:
+  push:
+    branches:
+      - "main"
+permissions:
+  packages: write
+jobs:
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Log in to the container registry
+      uses: docker/login-action@v3
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: |
+          ghcr.io/coreyrob/chat_reader:latest
+          ghcr.io/coreyrob/chat_reader:${{ github.sha }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push-image
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Docker Stack Deploy
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          name: chat_reader
+          file: docker-stack.yml
+          host: streamfeed.chat
+          user: deploy
+          ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}

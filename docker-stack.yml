@@ -1,0 +1,46 @@
+services:
+  traefik:
+    image: traefik:v3.3.4
+    command:
+      - "--providers.docker"
+      - "--providers.docker.exposedByDefault=false"
+      - "--log.level=DEBUG"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entryPoints.web.http.redirections.entryPoint.permanent=true"
+      - "--certificatesresolvers.cloudflare.acme.email=coreyrob52@gmail.com"
+      - "--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/cloudflare-acme.json"
+      - "--certificatesresolvers.cloudflare.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.cloudflare.acme.keytype=EC256"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge=true"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+    ports: 
+      - "80:80"
+      - "443:443"
+    secrets:
+      - CF_DNS_API_TOKEN
+    environment:
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/CF_DNS_API_TOKEN
+    volumes:
+      # So Traefik can listen to the Docker events 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - letsencrypt:/letsencrypt
+    restart: unless-stopped
+  web:
+    image: coreyrob/chat_reader:latest
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mytlsrouter.tls=true
+      - traefik.http.services.chat_reader_web.loadbalancer.server.port=3000
+      # this will match the cert resolver configured in traefik
+      - traefik.http.routers.mytlsrouter.tls.certresolver=cloudflare
+      - traefik.http.routers.mytlsrouter.rule=Host(`streamfeed.chat`)
+      - traefik.http.routers.mytlsrouter.entrypoints=websecure
+volumes:
+    letsencrypt:
+secrets:
+  CF_DNS_API_TOKEN:
+    external: true
