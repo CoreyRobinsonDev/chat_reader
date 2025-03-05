@@ -39,6 +39,8 @@ services:
       - traefik.http.routers.mytlsrouter.tls.certresolver=cloudflare
       - traefik.http.routers.mytlsrouter.rule=Host(`streamfeed.chat`)
       - traefik.http.routers.mytlsrouter.entrypoints=websecure
+    deploy:
+      replicas: 3
 volumes:
     letsencrypt:
 secrets:
