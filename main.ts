@@ -16,20 +16,22 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 
 
 const s = Bun.serve<WebSocketData>({
-	static: {
-		"/": index
-	},
 	idleTimeout: 30,
-	fetch(req, server) {
-		if (!server.upgrade(req, {
-			data: {
-				streamer: new URL(req.url).searchParams.get("streamer"),
-				platform: new URL(req.url).searchParams.get("platform")?.toUpperCase(),
-				userIp: server.requestIP(req)?.address
-			}
-		})) {
-			return Resp.InternalServerError("Upgrade failed")
-		}
+    //@ts-ignore: bun v1.2.4
+	routes: {
+		"/*": index,
+        "/api/:platform/:streamer": async (req: any) => {
+            const {platform, streamer}: {platform: string, streamer: string} = req.params
+            if (!s.upgrade(req, {
+                data: {
+                    streamer: streamer.toUpperCase(), 
+                    platform: platform.toUpperCase(),
+                    userIp: s.requestIP(req)?.address
+                }
+            })) {
+                return Resp.InternalServerError("Upgrade failed")
+            }
+        }
 	},
 	websocket: {
 		perMessageDeflate: true,
@@ -37,23 +39,22 @@ const s = Bun.serve<WebSocketData>({
 			ws.close(SocketCode.MessageProhibited, "Message Prohibited")	
 		},
 		async open(ws) {
-			const user = ws.data.userIp
+			const userIp = ws.data.userIp
 			const streamer = ws.data.streamer
 			const platform = ws.data.platform
-			console.log(`[${user}] has connected`)
+			console.log(`[${userIp}] has connected`)
 
 			if (!streamer) {
-				console.log(`[${user}] has disconnected`)
+				console.log(`[${userIp}] has disconnected`)
 				ws.close(SocketCode.BadRequest, `No Streamer Provided`)
 				return
 			} else if (!(platform in Platform)) {
-				console.log(`[${user}] has disconnected`)
+				console.log(`[${userIp}] has disconnected`)
 				ws.close(SocketCode.BadRequest, `Invalid Plaform: ${ws.data.platform}`)
 				return
 			}
 			
-			console.log(`[${user}] /kick/${streamer}`)
-
+			console.log(`[${userIp}] /${platform}/${streamer}`)
 			ws.subscribe(platform+streamer)
 			if (s.subscriberCount(platform+streamer) > 1) return
 
@@ -66,7 +67,7 @@ const s = Bun.serve<WebSocketData>({
 
 				if (page.isErr()) {
 					ws.unsubscribe(platform+streamer)
-					console.log(`[${user}] has disconnected`)
+					console.log(`[${userIp}] has disconnected`)
 					ws.close(SocketCode.InternalServerError, `Error on visiting ${site}`)
 					return
 				}
@@ -74,7 +75,7 @@ const s = Bun.serve<WebSocketData>({
 				while (s.subscriberCount(platform+streamer) > 0) {
 					const chat = await kick(page.unwrap())
 					if (chat.unwrap().length === 0) {
-						console.log(`[${user}] has disconnected`)
+						console.log(`[${userIp}] has disconnected`)
 						ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
 						await page.unwrap().close()
 						return
@@ -83,7 +84,7 @@ const s = Bun.serve<WebSocketData>({
 					if (chat.isErr()) {
 						await page.unwrap().close()
 						ws.unsubscribe(platform+streamer)
-						console.log(`[${user}] has disconnected`)
+						console.log(`[${userIp}] has disconnected`)
 						ws.close(SocketCode.InternalServerError, `Error on scraping ${site}`)
 						return
 					}
