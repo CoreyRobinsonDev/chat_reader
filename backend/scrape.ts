@@ -2,6 +2,7 @@ import { Browser, executablePath, Page, type LaunchOptions } from "puppeteer";
 import stealthPlugin from "puppeteer-extra-plugin-stealth"
 import puppeteer from "puppeteer-extra"
 import { Err, Ok, Result, type Chat } from "./types.ts";
+import { log } from "./util.ts";
 
 
 const MAX_TIMEOUT: number = 10_000

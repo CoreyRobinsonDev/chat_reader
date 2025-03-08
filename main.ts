@@ -1,5 +1,5 @@
 import { goto, initBrowser, kick } from "./backend/scrape.ts";
-import { Resp } from "./backend/util.ts";
+import { log, Resp } from "./backend/util.ts";
 import type { Browser } from "puppeteer";
 import { match, SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 //@ts-ignore: don't know why tsls can't find this
@@ -8,10 +8,10 @@ import index from "./frontend/index.html"
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 	Ok: (val) => {
-		console.log("Browser started")
+        log.info("Browser started")
 		return val
 	},
-	Err: (e) => console.error(e)
+	Err: (e) => log.error(`Error on browser init : ${e.message}`)
 })
 
 
@@ -42,19 +42,19 @@ const s = Bun.serve<WebSocketData>({
 			const userIp = ws.data.userIp
 			const streamer = ws.data.streamer
 			const platform = ws.data.platform
-			console.log(`[${userIp}] has connected`)
+            log.debug(`[${userIp}] has connected`)
 
 			if (!streamer) {
-				console.log(`[${userIp}] has disconnected`)
+                log.debug(`[${userIp}] has disconnected`)
 				ws.close(SocketCode.BadRequest, `No Streamer Provided`)
 				return
 			} else if (!(platform in Platform)) {
-				console.log(`[${userIp}] has disconnected`)
+                log.debug(`[${userIp}] has disconnected`)
 				ws.close(SocketCode.BadRequest, `Invalid Plaform: ${ws.data.platform}`)
 				return
 			}
 			
-			console.log(`[${userIp}] /${platform}/${streamer}`)
+            log.debug(`[${userIp}] /${platform}/${streamer}`)
 			ws.subscribe(platform+streamer)
 			if (s.subscriberCount(platform+streamer) > 1) return
 
@@ -67,27 +67,32 @@ const s = Bun.serve<WebSocketData>({
 
 				if (page.isErr()) {
 					ws.unsubscribe(platform+streamer)
-					console.log(`[${userIp}] has disconnected`)
 					ws.close(SocketCode.InternalServerError, `Error on visiting ${site}`)
+                    log.debug(`[${userIp}] has disconnected`)
+                    log.error(`Error on visiting ${site}`)
 					return
 				}
 
 				while (s.subscriberCount(platform+streamer) > 0) {
 					const chat = await kick(page.unwrap())
+
+					if (chat.isErr()) {
+						ws.unsubscribe(platform+streamer)
+						ws.close(SocketCode.InternalServerError, `Error on scraping ${site}`)
+						await page.unwrap().close()
+                        log.debug(`[${userIp}] has disconnected`)
+                        log.error(`Error on scraping ${site}`)
+						return
+					}
+
 					if (chat.unwrap().length === 0) {
-						console.log(`[${userIp}] has disconnected`)
+                        log.debug(`[${userIp}] has disconnected`)
+                        log.debug(`${platform} streamer ${streamer} is offline`)
 						ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
 						await page.unwrap().close()
 						return
 					}
 
-					if (chat.isErr()) {
-						await page.unwrap().close()
-						ws.unsubscribe(platform+streamer)
-						console.log(`[${userIp}] has disconnected`)
-						ws.close(SocketCode.InternalServerError, `Error on scraping ${site}`)
-						return
-					}
 					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername)
 					if (idx === -1) {
 						if (chat.unwrap().length === 0) continue
@@ -105,7 +110,7 @@ const s = Bun.serve<WebSocketData>({
 		},
 		async close(ws) {
 			ws.unsubscribe(ws.data.platform+ws.data.streamer)
-			console.log(`[${ws.data.userIp}] has disconnected`)
+            log.debug(`[${ws.data.userIp}] has disconnected`)
 		}
 	}
 })
@@ -117,7 +122,4 @@ process.on("SIGINT", async () => {
 	await BROWSER.close()
 })
 
-
-
-
-console.log(`Listening on ${s.url}`)
+log.info(`Listening on ${s.url}`)
