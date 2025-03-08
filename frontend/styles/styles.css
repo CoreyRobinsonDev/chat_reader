@@ -1,0 +1,201 @@
+:root {
+    --color-bg: #050705;
+    --color-bg2: #252c2a;
+    --color-bg3: #405151;
+    --color-fg: #eff2ef;
+}
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+    font-size: 10px;
+}
+
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul[class],
+ol[class],
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+    margin: 0;
+}
+
+/* Set core body defaults */
+body {
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    text-rendering: optimizeSpeed;
+    font-family: "Lato", sans-serif;
+}
+
+/* Remove list styles on ul, ol elements with a class attribute */
+ul[class],
+ol[class] {
+  list-style: none;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+}
+
+/* Make images easier to work with */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Natural flow and rhythm in articles by default */
+article > * + * {
+  margin-top: 1em;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+    border: none;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    overflow: visible;
+
+    background: transparent;
+
+    /* inherit font & color from ancestor */
+    color: inherit;
+    font: inherit;
+
+    /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
+    line-height: normal;
+
+    /* Corrects font smoothing for webkit */
+    -webkit-font-smoothing: inherit;
+    -moz-osx-font-smoothing: inherit;
+}
+
+/* Remove all animations and transitions for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-platform="TWITCH"] {
+    --color-prim: #6441a5;
+    --color-sec: #3e1984;
+    --color-acc: #8149e7;
+}
+
+[data-platform="TWITTER"] {
+    --color-prim: #1DA1F2;
+    --color-sec: #235e82;
+    --color-acc: #2598df;
+}
+
+[data-platform="KICK"] {
+    --color-prim: #00e701;
+    --color-sec: #386638;
+    --color-acc: #5db25d;
+}
+
+[data-platform="YOUTUBE"] {
+    --color-prim: #FF0000;
+    --color-sec: #713939;
+    --color-acc: #b64c4c;
+}
+
+.container {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    height: 100vh;
+    width: 100vw;
+    font-size: 2rem;
+}
+
+.header {
+    display: grid;
+    align-items: center;
+    width: 100vw;
+    height: 30vh;
+    padding: 0 clamp(1vw, 30vw, 30vw);
+    background-image: var(--color-gradiant);
+}
+
+.header_group {
+    border: 4px solid var(--color-prim);
+    border-radius: 8px;
+    background-color: var(--color-prim);
+    transition: all .3s ease-out;
+}
+
+.input-contianer {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    border-radius: 8px 8px 8px 0;
+    background-color: var(--color-bg);
+    user-select: none;
+}
+
+.icon {
+    display: grid;
+    place-items: center;
+    color: var(--color-acc);
+    padding-left: 2rem;
+    transition: all .3s ease-out;
+}
+
+
+.icon_menu {
+    display: flex;
+    gap: 1rem;
+    width: min-content;
+    border-radius: 0 0 8px 8px;
+    background-color: var(--color-bg);
+    padding: 1rem;
+}
+
+.icon_menu_item {
+    cursor: pointer;
+}
+
+.icon_menu_item span {
+    display: grid;
+    place-items: center;
+    color: var(--color-acc);
+}
+
+
+.streamer-input {
+    width: 100%;
+    border-radius: 8px;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    padding-right: 2rem;
+    border: none;
+    padding: 1rem 2rem;
+}

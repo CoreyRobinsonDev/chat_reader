@@ -3,7 +3,7 @@ import { log, Resp } from "./backend/util.ts";
 import type { Browser } from "puppeteer";
 import { match, SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 //@ts-ignore: don't know why tsls can't find this
-import index from "./frontend/index.html"
+import index from "./frontend/index.html" 
 
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
@@ -17,6 +17,7 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 
 const s = Bun.serve<WebSocketData>({
 	idleTimeout: 30,
+    development: true,
     //@ts-ignore: bun v1.2.4
 	routes: {
 		"/*": index,

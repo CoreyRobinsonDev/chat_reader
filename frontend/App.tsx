@@ -1,40 +1,56 @@
-import { useEffect, useState } from "react"
-import type { Chat } from "../backend/types"
 import { createRoot } from "react-dom/client"
-import Test from "./components/Test"
+import KickChat from "./components/KickChat"
+import { useState, type JSX } from "react"
+import { FaTwitch, FaTwitter, FaYoutube } from "react-icons/fa"
+import { SiKick } from "react-icons/si"
 
+type Icon = {
+    [U: string]: JSX.Element
+}
 
 function App() {
-	const domain = "ws://localhost:3000"
-	//const domain = "https://chat-reader.fly.dev"
-	const [chat, setChat] = useState<Chat[]>()
-	const [ready, setReady] = useState(false)
+    const [selectedPlatform, setSelectedPlatform] = useState(localStorage.getItem("platform") ?? "TWITCH")
+    const icon: Icon = {
+        TWITCH: <FaTwitch />,
+        TWITTER: <FaTwitter />,
+        KICK: <SiKick />,
+        YOUTUBE: <FaYoutube />
+    }
 
-	useEffect(() => {
-		const ws = new WebSocket(`${domain}?streamer=classybeef&platform=kick`)
+    const setPlatform = (platform: string) => {
+        setSelectedPlatform(platform)
+        localStorage.setItem("platform", platform)
+    }
 
-		ws.addEventListener("message", e => {
-			const data = JSON.parse(e.data).reverse()
-			setReady(true)
-			setChat(prev => prev ? [...prev, ...data] : data)
-			console.log(data)
-		})
 
-		ws.addEventListener("close", e => {
-			console.log(`ERROR ${e.code}: ${e.reason}`)
-		})
 
-		return () => ws.close()
-	}, [])
-
-	if (ready) {
-		return <ul>{chat!.map((item, key) => <li key={`chat-${key}`}>{item.userName}: {item.content}</li>)}</ul>
-	} else {
-		return <div>Loading...</div>
-	}
+    return <div className="container" data-platform={selectedPlatform}>
+        <header className="header">
+            <div className="header_group">
+                <div className="input-contianer">
+                    <span className="icon">
+                        {icon[selectedPlatform]}
+                    </span>
+                    <input 
+                        className="streamer-input"
+                        type="text" 
+                        placeholder="Find streamer..." 
+                    />
+                </div>
+                <ul className="icon_menu">
+                    <li data-platform="TWITCH" className="icon_menu_item" onClick={() => setPlatform("TWITCH")}><span>{icon.TWITCH}</span> </li>
+                    <li data-platform="TWITTER" className="icon_menu_item" onClick={() => setPlatform("TWITTER")}><span>{icon.TWITTER}</span> </li>
+                    <li data-platform="KICK" className="icon_menu_item" onClick={() => setPlatform("KICK")}><span>{icon.KICK}</span> </li>
+                    <li data-platform="YOUTUBE" className="icon_menu_item" onClick={() => setPlatform("YOUTUBE")}><span>{icon.YOUTUBE}</span> </li>
+                </ul>
+            </div>
+       </header>
+        <section className="chat-container">
+        </section>
+    </div>
 }
 
 document.addEventListener("DOMContentLoaded", () => {
 	const root = createRoot(document.getElementById("root")!)
-	root.render(<Test/>)
+	root.render(<App/>)
 })
