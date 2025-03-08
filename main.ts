@@ -17,7 +17,6 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 
 const s = Bun.serve<WebSocketData>({
 	idleTimeout: 30,
-    development: true,
     //@ts-ignore: bun v1.2.4
 	routes: {
 		"/*": index,
