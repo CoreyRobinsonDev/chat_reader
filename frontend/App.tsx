@@ -1,14 +1,17 @@
 import { createRoot } from "react-dom/client"
-import KickChat from "./components/KickChat"
-import { useState, type JSX } from "react"
+import { useEffect, useRef, useState, type JSX } from "react"
 import { FaTwitch, FaTwitter, FaYoutube, FaSearch } from "react-icons/fa"
 import { SiKick } from "react-icons/si"
+import ChatRouter from "./components/ChatRouter"
 
 
 function App() {
     const [selectedPlatform, setSelectedPlatform] = useState(localStorage.getItem("platform") ?? "TWITCH")
     const [streamer, setStreamer] = useState("")
-    const [streamerList, setStreamerList] = useState<{streamer: string, platform: string}[]>([])
+    const [streamerList, setStreamerList] = useState<{streamer: string, platform: string}[]>(
+        JSON.parse(localStorage.getItem("streamerList") ?? "[]")  
+    )
+    const input = useRef<HTMLInputElement>(null)
 
     const icon: {[U: string]: JSX.Element} = {
         TWITCH: <FaTwitch />,
@@ -20,8 +23,19 @@ function App() {
     const setPlatform = (platform: string) => {
         setSelectedPlatform(platform)
         localStorage.setItem("platform", platform)
+        input.current?.focus()
     }
 
+    const formSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (streamer.length === 0) return
+        setStreamerList(prev => [...prev, {streamer: streamer.toLowerCase(), platform: selectedPlatform}])
+        setStreamer("")
+    }
+
+    useEffect(() => {
+        input.current?.focus()
+    }, [])
 
 
     return <div className="container" data-platform={selectedPlatform}>
@@ -31,11 +45,12 @@ function App() {
                     <span className="icon">
                         {icon[selectedPlatform]}
                     </span>
-                    <form className="streamer-form">
+                    <form className="streamer-form" onSubmit={(e) => formSubmit(e)}>
                         <input 
+                            ref={input}
                             className="streamer-input"
                             type="text" 
-                            placeholder="Find streamer..." 
+                            placeholder="add stream chat..." 
                             value={streamer}
                             onChange={(e) => setStreamer(e.target.value)}
                         />
@@ -43,18 +58,34 @@ function App() {
                     </form>
                 </div>
                 <ul className="icon_menu">
-                    <li data-platform="TWITCH" className="icon_menu_item" onClick={() => setPlatform("TWITCH")}><span>{icon.TWITCH}</span> </li>
-                    <li data-platform="TWITTER" className="icon_menu_item" onClick={() => setPlatform("TWITTER")}><span>{icon.TWITTER}</span> </li>
-                    <li data-platform="KICK" className="icon_menu_item" onClick={() => setPlatform("KICK")}><span>{icon.KICK}</span> </li>
-                    <li data-platform="YOUTUBE" className="icon_menu_item" onClick={() => setPlatform("YOUTUBE")}><span>{icon.YOUTUBE}</span> </li>
+                    <button 
+                        data-platform="TWITCH" 
+                        className="icon_menu_item" 
+                        onClick={() => setPlatform("TWITCH")}>
+                        <span>{icon.TWITCH}</span> 
+                    </button>
+                    <button 
+                        data-platform="TWITTER" 
+                        className="icon_menu_item" 
+                        onClick={() => setPlatform("TWITTER")}>
+                        <span>{icon.TWITTER}</span> 
+                    </button>
+                    <button 
+                        data-platform="KICK" 
+                        className="icon_menu_item" 
+                        onClick={() => setPlatform("KICK")}>
+                        <span>{icon.KICK}</span> 
+                    </button>
+                    <button 
+                        data-platform="YOUTUBE" 
+                        className="icon_menu_item" 
+                        onClick={() => setPlatform("YOUTUBE")}>
+                        <span>{icon.YOUTUBE}</span> 
+                    </button>
                 </ul>
             </div>
         </header>
-        <section className="chat-container">
-            <ul>
-
-            </ul>
-        </section>
+        <ChatRouter streamerList={streamerList} />
     </div>
 }
 

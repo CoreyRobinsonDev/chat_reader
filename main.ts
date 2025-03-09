@@ -64,6 +64,7 @@ const s = Bun.serve<WebSocketData>({
 				const site = `https://kick.com/${streamer}/chatroom`
 				const page = await goto(BROWSER, site)
 				let lastUsername = "" 
+                let lastContent = ""
 
 				if (page.isErr()) {
 					ws.unsubscribe(platform+streamer)
@@ -93,7 +94,7 @@ const s = Bun.serve<WebSocketData>({
 						return
 					}
 
-					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername)
+					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername && el.content === lastContent)
 					if (idx === -1) {
 						if (chat.unwrap().length === 0) continue
 						s.publish(platform+streamer, JSON.stringify(chat.unwrap()), true)
@@ -102,15 +103,21 @@ const s = Bun.serve<WebSocketData>({
 						s.publish(platform+streamer, JSON.stringify(chat.unwrap().slice(0, idx)), true)
 					}
 					lastUsername = chat.unwrap()[0].userName
+					lastContent = chat.unwrap()[0].content
 					await Bun.sleep(100)
 				}
 				await page.unwrap().close()
+                break
+            default:
+                ws.unsubscribe(platform+streamer)
+                ws.close(SocketCode.InternalServerError, `Call to ${platform} is unimplemented`)
+                log.debug(`[${userIp}] has disconnected`)
+                log.debug(`Call to ${platform} is unimplemented`)
 			}
-
 		},
 		async close(ws) {
 			ws.unsubscribe(ws.data.platform+ws.data.streamer)
-            log.debug(`[${ws.data.userIp}] has disconnected`)
+            log.debug(`[${ws.data.userIp}] has exited`)
 		}
 	}
 })

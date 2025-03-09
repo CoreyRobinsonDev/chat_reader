@@ -14,6 +14,7 @@
 
 html {
     font-size: 10px;
+    transition: all .3s ease-out;
 }
 
 
@@ -24,8 +25,8 @@ h2,
 h3,
 h4,
 p,
-ul[class],
-ol[class],
+ul,
+ol,
 li,
 figure,
 figcaption,
@@ -33,6 +34,7 @@ blockquote,
 dl,
 dd {
     margin: 0;
+    padding: 0;
 }
 
 /* Set core body defaults */
@@ -41,11 +43,12 @@ body {
     scroll-behavior: smooth;
     text-rendering: optimizeSpeed;
     font-family: "Lato", sans-serif;
+    background-color: var(--color-bg);
 }
 
 /* Remove list styles on ul, ol elements with a class attribute */
-ul[class],
-ol[class] {
+ul,
+ol {
   list-style: none;
 }
 
@@ -104,6 +107,19 @@ button {
   }
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+html::-webkit-scrollbar, 
+.message-list::-webkit-scrollbar, 
+ul:has(.streamer-list)::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+html, .message-list, ul:has(.streamer-list) {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
 [data-platform="TWITCH"] {
     --color-prim: #6441a5;
     --color-sec: #3e1984;
@@ -131,11 +147,11 @@ button {
 .container {
     background-color: var(--color-bg);
     color: var(--color-fg);
-    height: 100vh;
     width: 100vw;
     font-size: 2rem;
 }
 
+/* SearchBar */
 .header {
     display: grid;
     place-items: center;
@@ -149,7 +165,7 @@ button {
     border: 4px solid var(--color-prim);
     border-radius: 8px;
     background-color: var(--color-prim);
-    transition: all .3s ease-out;
+    box-shadow: 0 0 1000px 1px var(--color-prim);
 }
 
 .input-contianer {
@@ -159,14 +175,13 @@ button {
     border-radius: 8px 8px 8px 0;
     background-color: var(--color-bg);
     user-select: none;
+    padding-left: 2rem;
 }
 
 .icon {
     display: grid;
     place-items: center;
     color: var(--color-acc);
-    padding-left: 2rem;
-    transition: all .3s ease-out;
 }
 
 .icon_menu {
@@ -208,8 +223,87 @@ button {
     padding-right: 2rem;
     border: none;
     padding: 1rem 2rem;
+    outline: none;
+}
+/* SearchBar */
+
+/* ChatRouter */
+.chat-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4rem;
+    width: 98vw;
+}
+/* ChatRouter */
+
+/* Chat */
+.chat {
+    flex: 0 1 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: clamp(400px, 400px, 90vw);
+    height: 800px;
+    border-radius: 8px;
+    border: 2px solid #111;
+    background-color: #111;
+    box-shadow: -8px 0 1px 0 #111;
 }
 
-.chat-container {
-    background-color: var(--color-bg2);
+ul:has(.streamer-list) {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    background-color: #111;
+    width: 100%;
+    overflow-x: scroll;
+    user-select: none;
 }
+
+.streamer-list {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    border-radius: 8px;
+    padding: .5rem 1rem;
+}
+.streamer-list:hover,
+.streamer-list:focus {
+    background-color: #1a1a1a;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.message-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    border-radius: 8px;
+    background-color: var(--color-bg);
+    height: 100%;
+    width: 100%;
+    padding: .5rem 1rem;
+    overflow-y: auto;
+    text-wrap: pretty;
+}
+
+.message {
+    display: flex;
+    flex-wrap: wrap;
+    color: var(--color-bg3);
+}
+
+.message-content {
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+    color: var(--color-fg);
+    padding-left: .5rem;
+}
+
+.message-content span, 
+.message-content img {
+    padding-left: .5rem;
+}
+/* Chat */
