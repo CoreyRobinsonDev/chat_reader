@@ -65,6 +65,8 @@ const s = Bun.serve<WebSocketData>({
 				const page = await goto(BROWSER, site)
 				let lastUsername = "" 
                 let lastContent = ""
+                let emptyResponses = 0
+                const emptyRepsonseLimit = 500
 
 				if (page.isErr()) {
 					ws.unsubscribe(platform+streamer)
@@ -96,10 +98,32 @@ const s = Bun.serve<WebSocketData>({
 
 					const idx = chat.unwrap().findIndex(el => el.userName === lastUsername && el.content === lastContent)
 					if (idx === -1) {
-						if (chat.unwrap().length === 0) continue
+						if (chat.unwrap().length === 0) {
+                            emptyResponses++
+                            if (emptyResponses >= emptyRepsonseLimit) {
+                                log.debug(`[${userIp}] has disconnected`)
+                                log.debug(`${platform} streamer ${streamer} is offline`)
+                                ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+                                await page.unwrap().close()
+                                return
+                            }
+                            continue 
+                        }
+                        emptyResponses = 0
 						s.publish(platform+streamer, JSON.stringify(chat.unwrap()), true)
 					} else {
-						if (chat.unwrap().slice(0, idx).length === 0) continue
+						if (chat.unwrap().slice(0, idx).length === 0) {
+                            emptyResponses++
+                            if (emptyResponses >= emptyRepsonseLimit) {
+                                log.debug(`[${userIp}] has disconnected`)
+                                log.debug(`${platform} streamer ${streamer} is offline`)
+                                ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+                                await page.unwrap().close()
+                                return
+                            }
+                            continue 
+                        }
+                        emptyResponses = 0
 						s.publish(platform+streamer, JSON.stringify(chat.unwrap().slice(0, idx)), true)
 					}
 					lastUsername = chat.unwrap()[0].userName
