@@ -91,7 +91,7 @@ function App() {
                 </ul>
             </div>
         </header>
-        <ChatRouter streamerList={streamerList} />
+        <ChatRouter streamerList={streamerList} setStreamerList={setStreamerList} />
     </div>
 }
 

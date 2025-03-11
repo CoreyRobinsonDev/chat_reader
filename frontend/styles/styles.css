@@ -261,17 +261,36 @@ ul:has(.streamer-list) {
 }
 
 .streamer-list {
+    position: relative;
     display: flex;
     align-items: center;
     gap: .5rem;
     border-radius: 8px;
     padding: .5rem 1rem;
+    --opacity: 0;
 }
 .streamer-list:hover,
 .streamer-list:focus {
     background-color: #1a1a1a;
     font-weight: bold;
     cursor: pointer;
+    --opacity: 100%;
+}
+
+.streamer-list_remove {
+    position: absolute;
+    right: 5px;
+    display: grid;
+    place-items: center;
+    opacity: var(--opacity);
+    border-radius: 50%;
+    background-color: var(--color-bg2);
+}
+.streamer-list_remove:hover,
+.streamer-list_remove:focus {
+    --opacity: 100%;
+    cursor: pointer;
+    outline: 1px solid var(--color-fg);
 }
 
 .message-list {

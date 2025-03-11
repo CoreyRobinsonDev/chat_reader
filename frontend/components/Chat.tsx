@@ -2,11 +2,20 @@ import { useEffect, useRef } from "react"
 import type { Chat } from "../../backend/types"
 import { FaTwitch, FaTwitter, FaYoutube, FaInfoCircle } from "react-icons/fa"
 import { SiKick } from "react-icons/si"
+import { MdCancel } from "react-icons/md"
 import type { JSX } from "react"
 import useFetchChats from "../hooks/useFetchChat"
 
-export default function Chat({streamerList}: {streamerList: {platform: string, streamer: string}[]}) {
-    const chatStreams = useFetchChats(streamerList)
+export default function Chat(
+    {streamerList, setStreamerList}: {
+        streamerList: {platform: string, streamer: string }[],
+        setStreamerList: React.Dispatch<React.SetStateAction<{
+            streamer: string;
+            platform: string;
+        }[]>>
+    }
+) {
+    const [chatStreams, webSockets, setWebSockets] = useFetchChats(streamerList)
     const messageEnd = useRef<HTMLDivElement>(null)
 
     const icon: {[U: string]: JSX.Element} = {
@@ -14,6 +23,20 @@ export default function Chat({streamerList}: {streamerList: {platform: string, s
         TWITTER: <FaTwitter />,
         KICK: <SiKick />,
         YOUTUBE: <FaYoutube />
+    }
+
+    const removeStreamer = (platform: string, streamer: string) => {
+        setStreamerList(prev => {
+            const updated = prev.filter(item => (streamer !== item.streamer || platform !== item.platform))
+            localStorage.setItem("streamerList", JSON.stringify(updated))
+
+            // NOTE: adding this logic outside of the useFetchChats hooks because for some reason updating streamerList to an empty array doesn't trigger the useEffect
+            if (updated.length === 0) {
+                webSockets.forEach(ws => ws.close())
+                setWebSockets([])
+            }
+            return updated 
+        })
     }
 
     useEffect(() => {
@@ -39,17 +62,23 @@ export default function Chat({streamerList}: {streamerList: {platform: string, s
                             ? <img title={word} src={item.emoteContainer[word]} alt={word} width="32px" height="32px" />
                             : <span>{word}</span>)
                     }</span></li>))
-                : <span className="message">
+                : <li className="message-content">
                     <span className="mini-icon"><FaInfoCircle /></span>
                     <span style={{color: "dodgerblue"}}>Info</span>: Connecting to chat...
-                </span>}
+                </li>}
             <div ref={messageEnd}></div>
         </ul>
         <ul>
-            {streamerList.map((dat, key) => <button className="streamer-list" key={key}>
-                <span className="mini-icon" data-platform={dat.platform}>{icon[dat.platform]}</span>
-                <span>{dat.streamer}</span>
+            {streamerList.map((item, key) => <button className="streamer-list" key={`list-${key}`}>
+                <span className="mini-icon" data-platform={item.platform}>{icon[item.platform]}</span>
+                <span>{item.streamer}</span>
+                <span 
+                    tabIndex={0}
+                    className="streamer-list_remove" 
+                    onClick={() => removeStreamer(item.platform, item.streamer)}
+                ><MdCancel /></span>
             </button>)}
         </ul>
     </section>
 }
+
