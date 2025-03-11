@@ -91,7 +91,7 @@ const s = Bun.serve<WebSocketData>({
 					if (chat.unwrap().length === 0) {
                         log.debug(`[${userIp}] has disconnected`)
                         log.debug(`${platform} streamer ${streamer} is offline`)
-						ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+						ws.close(SocketCode.BadRequest, `${platform.toLowerCase()} streamer ${streamer.toLowerCase()} is offline`)
 						await page.unwrap().close()
 						return
 					}

@@ -34,7 +34,7 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 				})
 			const contentHTML = el.querySelector(".font-bold.text-white + span")?.children
 			let content = ""
-			let emoteContainer: Chat["emoteContaner"] = {}
+			let emoteContainer: Chat["emoteContainer"] = {}
 			for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
 				const className = contentHTML?.item(i)?.querySelector(".chat-emote-container, .chat-entry-content")?.className
 				if (className === "chat-emote-container") {

@@ -239,11 +239,10 @@ html, .message-list, ul:has(.streamer-list) {
 
 /* Chat */
 .chat {
-    flex: 0 1 400px;
+    flex: 0 1 500px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    width: clamp(400px, 400px, 90vw);
     height: 800px;
     border-radius: 8px;
     border: 2px solid #111;
@@ -291,12 +290,13 @@ ul:has(.streamer-list) {
 .message {
     display: flex;
     flex-wrap: wrap;
-    color: var(--color-bg3);
+    color: var(--color-fg);
 }
 
 .message-content {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     width: fit-content;
     color: var(--color-fg);
     padding-left: .5rem;
@@ -305,5 +305,12 @@ ul:has(.streamer-list) {
 .message-content span, 
 .message-content img {
     padding-left: .5rem;
+}
+
+.mini-icon {
+    display: grid;
+    place-items: center;
+    color: var(--color-acc);
+    font-size: 12px;
 }
 /* Chat */

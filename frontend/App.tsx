@@ -28,8 +28,14 @@ function App() {
 
     const formSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (streamer.length === 0) return
-        setStreamerList(prev => [...prev, {streamer: streamer.toLowerCase(), platform: selectedPlatform}])
+        if (streamer.length === 0 
+            || streamerList.filter(item => item.platform === selectedPlatform && item.streamer === streamer.toLowerCase()).length > 0 
+        ) return
+        setStreamerList(prev => {
+            const arr = [...prev, {streamer: streamer.toLowerCase(), platform: selectedPlatform}]
+            localStorage.setItem("streamerList", JSON.stringify(arr))
+            return arr
+        })
         setStreamer("")
     }
 
