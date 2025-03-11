@@ -11,7 +11,7 @@ type ChatStream = {
 
 export default function useFetchChats(streamList: {platform: string, streamer: string}[]
 ): [ChatStream[], WebSocket[], React.Dispatch<React.SetStateAction<WebSocket[]>>] {
-    const domain = "ws://localhost:3000"
+    const domain = "https://streamfeed.chat"
     const [chatStream, setChatStream] = useState<ChatStream[]>([])
     const [cachedStreamList, setCachedStreamList] = useState<{platform: string, streamer: string}[]>([])
     const [webSockets, setWebSockets] = useState<WebSocket[]>([])
