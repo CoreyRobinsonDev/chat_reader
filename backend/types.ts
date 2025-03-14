@@ -3,7 +3,7 @@ import { BROWSER } from "../main.ts";
 export type WebSocketData = {
 	streamer: string
 	platform: Platform
-	userIp: string
+	userId: string
 }
 
 export type Chat = {
