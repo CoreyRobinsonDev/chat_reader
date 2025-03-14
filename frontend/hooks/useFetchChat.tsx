@@ -41,7 +41,7 @@ export default function useFetchChats(streamList: {platform: string, streamer: s
                     }
                     const idx = webSockets.findIndex((ws) => ws.url.includes(cachedItem.streamer.toLowerCase())
                         && ws.url.includes(cachedItem.platform.toLowerCase()))
-                    webSockets[idx].close()
+                    webSockets[idx]?.close()
                     setWebSockets(prev => {
                         const updated = prev.filter((_, i) => i !== idx)
                         console.log(updated)
@@ -58,10 +58,11 @@ export default function useFetchChats(streamList: {platform: string, streamer: s
         setCachedStreamList(streamList)
 
         for (const entry of list) {
-            const ws = new WebSocket(`${domain}/api/kick/${entry.streamer}`)
+            let ws = new WebSocket("")
             timeouts.push(setTimeout(() => {
                 switch(entry.platform) {
                 case "KICK":
+                    ws = new WebSocket(`${domain}/api/kick/${entry.streamer}`)
                     ws.addEventListener("message", e => {
                         const data = JSON.parse(e.data).reverse()
                         // NOTE: could be a race condition. we'll see

@@ -62,6 +62,8 @@ const s = Bun.serve<WebSocketData>({
 
 
 			switch (platform) {
+            case Platform.TWITCH:
+                break
 			case Platform.KICK:
 				const site = `https://kick.com/${streamer}/chatroom`
 				const page = await goto(BROWSER, site)
