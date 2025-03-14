@@ -244,6 +244,7 @@ html, .message-list, ul:has(.streamer-list) {
     flex-direction: column;
     justify-content: flex-end;
     height: 800px;
+    max-width: 500px;
     border-radius: 8px;
     border: 2px solid #111;
     background-color: #111;
