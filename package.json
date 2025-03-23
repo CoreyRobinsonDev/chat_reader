@@ -3,7 +3,6 @@
   "module": "main.ts",
   "type": "module",
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.7.0",
     "@types/bun": "latest"
   },
   "peerDependencies": {
@@ -11,14 +10,11 @@
   },
   "dependencies": {
     "@types/react-dom": "^19.0.3",
-    "bun-plugin-tailwind": "^0.0.15",
     "puppeteer": "^24.0.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "tailwindcss": "^4.0.12",
-    "url-pattern": "^1.0.3"
   }
 }
