@@ -4,6 +4,7 @@ import type { Browser } from "puppeteer";
 import { match, SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 //@ts-ignore: don't know why tsls can't find this
 import index from "./frontend/index.html" 
+import getChat from "./backend/twitch.ts";
 
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
@@ -63,6 +64,7 @@ const s = Bun.serve<WebSocketData>({
 
 			switch (platform) {
             case Platform.TWITCH:
+                getChat()
                 break
 			case Platform.KICK:
 				const site = `https://kick.com/${streamer}/chatroom`

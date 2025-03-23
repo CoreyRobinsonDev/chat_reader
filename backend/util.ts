@@ -1,4 +1,5 @@
 import { Code } from "./types";
+import { Database } from "bun:sqlite"
 
 export const Resp = {
 	Ok(msg?: string): Response {
@@ -62,7 +63,17 @@ export const log = {
         const mon = ('0'+date.getMonth()).slice(-2)
         const day = ('0'+date.getDate()).slice(-2)
 
-        console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+        if (typeof msg === "string") {
+            const lines = msg.split("\n")
+
+            for (const line of lines) {
+                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, line)
+            }
+        } else {
+            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+        }
+        
+
     },
     debug: (msg: any) => {
         const date = new Date()
@@ -72,7 +83,15 @@ export const log = {
         const mon = ('0'+date.getMonth()).slice(-2)
         const day = ('0'+date.getDate()).slice(-2)
 
-        console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[33mDBG\x1b[0m :`, msg)
+        if (typeof msg === "string") {
+            const lines = msg.split("\n")
+
+            for (const line of lines) {
+                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, line)
+            }
+        } else {
+            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+        }
     },
     error: (msg: any) => {
         const date = new Date()
@@ -82,6 +101,21 @@ export const log = {
         const mon = ('0'+date.getMonth()).slice(-2)
         const day = ('0'+date.getDate()).slice(-2)
 
-        console.error(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[31mERR\x1b[0m :`, msg)
+        if (typeof msg === "string") {
+            const lines = msg.split("\n")
+
+            for (const line of lines) {
+                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, line)
+            }
+        } else {
+            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+        }
     },
+}
+
+export function openDB() {
+    return new Database("db.sqlite", {
+        strict: true,
+        create: true
+    })
 }

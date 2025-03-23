@@ -1,5 +1,13 @@
 import { BROWSER } from "../main.ts";
 
+export type User = {
+    id: number
+    user_id: string
+    twitch_access_token?: string
+    twitch_reset_token?: string
+    created_at: Date
+}
+
 export type WebSocketData = {
 	streamer: string
 	platform: Platform
@@ -7,11 +15,11 @@ export type WebSocketData = {
 }
 
 export type Chat = {
-	badgeName?: string, 
-	badgeImg?: string,
-	userName: string,
-	userColor: number[],
-	content: string,
+	badgeName?: string
+	badgeImg?: string
+	userName: string
+	userColor: number[]
+	content: string
 	emoteContainer?: {[U: string]: string}
 }
 
