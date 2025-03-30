@@ -1,17 +1,22 @@
 import { BROWSER } from "../main.ts";
 
-export type User = {
+export type DbUser = {
     id: number
-    user_id: string
+    client_id: string
+    secret: string
     twitch_access_token?: string
-    twitch_reset_token?: string
+    twitch_refresh_token?: string
     created_at: Date
 }
 
 export type WebSocketData = {
 	streamer: string
 	platform: Platform
-	userId: string
+	clientId: string
+    toClose?: {
+        socketCode: SocketCode,
+        reason: string
+    }
 }
 
 export type Chat = {
@@ -35,15 +40,9 @@ export enum Platform {
 export enum SocketCode {
 	MessageProhibited = 4000,
 	BadRequest = 4001,
+	Unauthorized = 4002,
 	InternalServerError = 1011
 }
-
-export enum Code {
-	OK,
-	CON,
-	MSG,
-	ERR
-} 
 
 export function Ok<T>(result: T): Result<T> {
 	return new Result(result, undefined)

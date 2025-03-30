@@ -1,4 +1,3 @@
-import { Code } from "./types";
 import { Database } from "bun:sqlite"
 
 export const Resp = {
@@ -6,7 +5,6 @@ export const Resp = {
 		return new Response(
 			JSON.stringify({
 				status: 200,
-				code: Code.OK,
 				message: msg ?? "Ok",
 			}), 
 			{status: 200}
@@ -16,17 +14,24 @@ export const Resp = {
 		return new Response(
 			JSON.stringify({
 				status: 400,
-				code: Code.ERR,
 				message: msg ?? "Bad Request",
 			}), 
 			{status: 400}
 		)
 	},
+    Unauthorized(msg?: string): Response {
+		return new Response(
+			JSON.stringify({
+				status: 401,
+				message: msg ?? "Unauthenticated",
+			}), 
+			{status: 401}
+		)
+    },
 	NotFound(msg?: string): Response {
 		return new Response(
 			JSON.stringify({
 				status: 404,
-				code: Code.ERR,
 				message: msg ?? "Not Found",
 			}), 
 			{status: 404}
@@ -36,7 +41,6 @@ export const Resp = {
 		return new Response(
 			JSON.stringify({
 				status: 405,
-				code: Code.ERR,
 				message: msg ?? "Method Not Allowed",
 			}), 
 			{status: 405}
@@ -46,7 +50,6 @@ export const Resp = {
 		return new Response(
 			JSON.stringify({
 				status: 500,
-				code: Code.ERR,
 				message: msg ?? "Internal Server Error",
 			}), 
 			{status: 500}
@@ -87,10 +90,10 @@ export const log = {
             const lines = msg.split("\n")
 
             for (const line of lines) {
-                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, line)
+                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[33mDBG\x1b[0m :`, line)
             }
         } else {
-            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[33mDBG\x1b[0m :`, msg)
         }
     },
     error: (msg: any) => {
@@ -105,10 +108,10 @@ export const log = {
             const lines = msg.split("\n")
 
             for (const line of lines) {
-                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, line)
+                console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[31mERR\x1b[0m :`, line)
             }
         } else {
-            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[34mINF\x1b[0m :`, msg)
+            console.log(`\x1b[90m[${date.getFullYear()}/${mon}/${day} ${hour}:${min}:${sec}]\x1b[0m \x1b[31mERR\x1b[0m :`, msg)
         }
     },
 }
@@ -118,4 +121,17 @@ export function openDB() {
         strict: true,
         create: true
     })
+}
+
+export function getCookies(req: Request) {
+    const cookies = req.headers.get("Cookie") ?? ""
+    const cookiesObj: {[U: string]: string | undefined } = {}
+
+
+    for (const cookie of cookies!.split("; ")) {
+        const [key, val] = cookie.split("=")
+        cookiesObj[key] = val
+    }
+
+    return cookiesObj
 }

@@ -76,6 +76,7 @@ export default function useFetchChats(streamList: {platform: string, streamer: s
                     })
 
                     ws.addEventListener("close", e => {
+                        console.log(e)
                         setChatStream(prev => 
                             [...prev, {
                                 streamer: entry.streamer, 

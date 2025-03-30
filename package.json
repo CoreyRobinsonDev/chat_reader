@@ -3,7 +3,7 @@
   "module": "main.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "^1.2.8"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -15,6 +15,6 @@
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-icons": "^5.5.0",
+    "react-icons": "^5.5.0"
   }
 }
