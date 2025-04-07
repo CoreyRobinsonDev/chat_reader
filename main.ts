@@ -1,10 +1,10 @@
 import { goto, initBrowser, kick } from "./backend/scrape.ts";
 import { getCookies, log, openDB, Resp } from "./backend/util.ts";
-import type { Browser } from "puppeteer";
 import { match, SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 import index from "./frontend/index.html" 
 import getChat from "./backend/twitch.ts";
 import type { RouterTypes } from "bun";
+import type { Browser } from "puppeteer";
 
 
 export const BROWSER: Browser = match<Browser>(await initBrowser(), {
@@ -17,9 +17,7 @@ export const BROWSER: Browser = match<Browser>(await initBrowser(), {
 
 type Routes = {
     "/*": RouterTypes.RouteValue<"/*">
-    "/ip": RouterTypes.RouteValue<"/ip">
-    "/api/auth/id": RouterTypes.RouteValue<"/api/auth/id">
-    "/api/auth/register/:id": RouterTypes.RouteValue<"/api/auth/register/:id">
+    // "/api/register": RouterTypes.RouteValue<"/api/register">
     "/api/:platform/:streamer": RouterTypes.RouteValue<"/api/:platform/:streamer">
 }
 
@@ -27,69 +25,31 @@ const s = Bun.serve<WebSocketData, Routes>({
 	idleTimeout: 30,
 	routes: {
 		"/*": index,
-        "/ip": req  => {
-            log.debug(s.requestIP(req))
-            return Resp.Ok()
-        },
-        "/api/auth/id": req => {
-            let clientId = getCookies(req).clientId
-
-            if (!!clientId) {
-                using db = openDB()
-                using query = db.query("select 1 from user where client_id=$client_id")
-
-                if (!!query.get({clientId})) return new Response(
-                    JSON.stringify({
-                        status: 201,
-                        message: "Client is already Authenticated",
-                        clientId,
-                    }), {
-                        status: 201,
-                        headers: {
-                            "Set-Cookie": `clientId=${clientId}; HttpOnly; Secure; SameSite=Strict; Path=/`
-                        } 
-                    }
-                )
-            }
-            clientId = Bun.randomUUIDv7("base64url")
-
-            return new Response(
-                JSON.stringify({
-                    status: 201,
-                    message: "Authenticated",
-                    clientId,
-                }), {
-                    status: 201,
-                    headers: {
-                        "Set-Cookie": `clientId=${clientId}; HttpOnly; Secure; SameSite=Strict; Path=/`
-                    } 
-                }
-            )
-        },
-        "/api/auth/register/:id": req => {
-            const {id} = req.params
-            const secret = Bun.randomUUIDv7()
-            using db  = openDB()
-            using query = db.query("insert into user (client_id, secret) values ($clientId, $secret)")
-
-            const result = query.run({ clientId: id, secret })
-            if (result.changes === 0) return Resp.Unauthorized("Authentication failed")
-
-            return new Response(
-                JSON.stringify({
-                    status: 201,
-                    message: "Authenticated",
-                    clientId: id,
-                    secret,
-                }), {
-                    status: 201,
-                    headers: {
-                        "Set-Cookie": `clientId=${id}; HttpOnly; Secure; SameSite=Strict; Path=/`
-                    } 
-                }
-            )
-
-        },
+        // "/api/register": {
+        //     POST: async req => {
+        //         const body: {
+        //             clientName: string,
+        //             secret: string
+        //         } = await req.json()
+        //         if (typeof body.clientName === "undefined") return Resp.BadRequest("Missing required 'clientName' key")
+        //         if (typeof body.secret === "undefined") return Resp.BadRequest("Missing required 'secret' key")
+        //         const token = jwt.sign(body, process.env.JWT_SECRET as string, {
+        //             expiresIn: "7d"
+        //         })
+        //
+        //         return new Response(
+        //             JSON.stringify({
+        //                 status: 201,
+        //                 message: "Authenticated",
+        //             }), {
+        //                 status: 201,
+        //                 headers: {
+        //                     "Set-Cookie": `token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/`
+        //                 } 
+        //             }
+        //         )
+        //     }
+        // },
         "/api/:platform/:streamer": req => {
             const {platform, streamer}: {platform: string, streamer: string} = req.params
             const clientId = getCookies(req).clientId
