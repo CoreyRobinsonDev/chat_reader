@@ -1,7 +1,7 @@
 import { Browser, executablePath, Page, type LaunchOptions } from "puppeteer";
 import stealthPlugin from "puppeteer-extra-plugin-stealth"
 import puppeteer from "puppeteer-extra"
-import { Err, Ok, Result, type Chat } from "./types.ts";
+import { type Chat } from "./types";
 
 
 const MAX_TIMEOUT: number = 10_000
@@ -13,9 +13,8 @@ const CONFIG: LaunchOptions = {
 	headless: true, 
 }
 
-export async function kick(page: Page): Promise<Result<Chat[]>> {
+export async function kick(page: Page): Promise<Chat[]> {
 	let chat: Chat[]
-	try {
 	chat = await page.$$eval("div.chat-entry > div", chats => {
 		return chats.map(el => {
 			const badgeImg = el.querySelector("img.icon")?.getAttribute("src")
@@ -65,39 +64,22 @@ export async function kick(page: Page): Promise<Result<Chat[]>> {
 			}
 		})
 	}) ?? []
-	} catch(e: any) {
-		return Err(e.message)
-	}
 
-	return Ok(chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0))
+	return chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0)
 }
 
-export async function initBrowser(): Promise<Result<Browser>> {
+export async function initBrowser(): Promise<Browser> {
 	puppeteer.use(stealthPlugin())
-	let browser: Browser
-
-	try {
-		browser = await puppeteer.launch(CONFIG)
-		return Ok(browser)
-	} catch(e: any) {
-		return Err(e)
-	}
+    return await puppeteer.launch(CONFIG)
 }
 
 
-export async function goto(browser: Browser, site: string): Promise<Result<Page>> {
+export async function goto(browser: Browser, site: string): Promise<Page> {
 	const page = await browser.newPage()
 	page.setDefaultTimeout(MAX_TIMEOUT)
 
-	try {
-		await page.goto(site, {
-			waitUntil: "networkidle2"
-		})
-		return Ok(page)
-	} catch (_) {
-		await page.close()
-		return Err(`Unhandled error on page.goto(${site})`)
-	}
+    await page.goto(site, { waitUntil: "networkidle2" })
+    return page
 }
 
 

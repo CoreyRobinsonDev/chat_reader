@@ -1,4 +1,4 @@
-import { Database } from "bun:sqlite"
+import type { Failure, Result, Success } from "./types"
 
 export const Resp = {
 	Ok(msg?: string): Response {
@@ -116,22 +116,50 @@ export const log = {
     },
 }
 
-export function openDB() {
-    return new Database("db.sqlite", {
-        strict: true,
-        create: true
-    })
+export async function tryCatch<T, E = Error>(
+    promise: Promise<T>
+): Promise<Result<T, E>> {
+    try {
+        const data = await promise
+        return [ data, undefined ]
+    } catch (error) {
+        return [ undefined, error as E ]
+    }
 }
 
-export function getCookies(req: Request) {
-    const cookies = req.headers.get("Cookie") ?? ""
-    const cookiesObj: {[U: string]: string | undefined } = {}
+export function unwrap<T>(result: Result<T, Error>): T {
+    const [data, err] = result
 
-
-    for (const cookie of cookies!.split("; ")) {
-        const [key, val] = cookie.split("=")
-        cookiesObj[key] = val
+    if (!data && err) {
+        log.error(err.message)
+        process.exit(1)
     }
+    return data!
+}
 
-    return cookiesObj
+export function unwrapOr<T>(result: Result<T, Error>, substitute: T):  T {
+    const [data, err] = result
+
+    if (!data && err) {
+        return substitute
+    }
+    return data!
+}
+
+export function unwrapOrElse<T>(result: Result<T, Error>, fn: () => T): T {
+    const [data, err] = result
+
+    if (!data && err) {
+        return fn()
+    }
+    return data!
+}
+
+
+export function Ok<T>(data: T): Success<T> {
+    return [ data, undefined ]
+}
+
+export function Err(error: Error): Failure<Error> {
+    return [  undefined, error ]
 }
