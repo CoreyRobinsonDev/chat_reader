@@ -1,9 +1,8 @@
-import { getChat, goto, initBrowser, kick } from "./backend/scrape.ts";
+import { getChat, goto, initBrowser } from "./backend/scrape.ts";
 import { log, Resp, tryCatch, unwrap } from "./backend/util.ts";
-import { SocketCode, type WebSocketData, Platform, type Result } from "./backend/types.ts";
+import { SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 import index from "./frontend/index.html" 
 import type { RouterTypes } from "bun";
-import type { Page } from "puppeteer";
 
 export const BROWSER = unwrap(await tryCatch(initBrowser()))
 

@@ -59,7 +59,7 @@ export default function Chat(
                     >{item.userName}</span>:
                         {
                         item.content.split(" ").map(word => typeof item?.emoteContainer?.[word] !== "undefined"
-                            ? <img title={word} src={item.emoteContainer[word]} alt={word} width="32px" height="32px" />
+                            ? <img title={word} src={item.emoteContainer[word]} alt={word} height="32px" />
                             : <span>{word}</span>)
                     }</span></li>))
                 : <li className="message-content">

@@ -60,36 +60,33 @@ export default function useFetchChats(streamList: {platform: string, streamer: s
         for (const entry of list) {
             let ws = new WebSocket("")
             timeouts.push(setTimeout(() => {
-                switch(entry.platform) {
-                case "KICK":
-                    ws = new WebSocket(`${domain}/api/kick/${entry.streamer}`)
-                    ws.addEventListener("message", e => {
-                        const data = JSON.parse(e.data).reverse()
-                        // NOTE: could be a race condition. we'll see
-                        setChatStream(prev => 
-                            [...prev, {
-                                streamer: entry.streamer, 
-                                platfrom: entry.platform, 
-                                chat: data
-                            }]
-                        )
-                    })
+                ws = new WebSocket(`${domain}/api/${entry.platform}/${entry.streamer}`)
+                ws.addEventListener("message", e => {
+                    const data = JSON.parse(e.data).reverse()
+                    // NOTE: could be a race condition. we'll see
+                    setChatStream(prev => 
+                        [...prev, {
+                            streamer: entry.streamer, 
+                            platfrom: entry.platform, 
+                            chat: data
+                        }]
+                    )
+                })
 
-                    ws.addEventListener("close", e => {
-                        console.log(e)
-                        setChatStream(prev => 
-                            [...prev, {
-                                streamer: entry.streamer, 
-                                platfrom: entry.platform, 
-                                chat: [{
-                                    userName: "Error",
-                                    userColor: [255,0,0],
-                                    content: `${e.reason}`
-                                }]
+                ws.addEventListener("close", e => {
+                    console.log(e)
+                    setChatStream(prev => 
+                        [...prev, {
+                            streamer: entry.streamer, 
+                            platfrom: entry.platform, 
+                            chat: [{
+                                userName: "Error",
+                                userColor: [255,0,0],
+                                content: `${e.reason ?? "Disconnected"}`
                             }]
-                        )
-                    })
-                }
+                        }]
+                    )
+                })
             }, 0))
             setWebSockets(prev => {
                 const update = [...prev, ws]

@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+
+:root {
+    --background: oklch(24.95% 0.0491 20.19);
+    --secondary-background: oklch(23.93% 0 0);
+    --foreground: oklch(100% 0 0);
+    --main-foreground: oklch(0% 0 0);
+    --main: oklch(1 0 0);
+    --border: oklch(0% 0 0);
+    --ring: oklch(100% 0 0);
+    --shadow: 4px 4px 0px 0px var(--border);
+}
+
+@theme inline {
+    --color-brand: var(--color-prim);
+    --color-brand-fg: var(--color-text);
+    --color-main: var(--main);
+    --color-background: var(--background);
+    --color-secondary-background: var(--secondary-background);
+    --color-foreground: var(--foreground);
+    --color-main-foreground: var(--main-foreground);
+    --color-border: var(--border);
+    --color-overlay: var(--overlay);
+    --color-ring: var(--ring);
+
+    --spacing-boxShadowX: 4px;
+    --spacing-boxShadowY: 4px;
+    --spacing-reverseBoxShadowX: -4px;
+    --spacing-reverseBoxShadowY: -4px;
+    --radius-base: 2px;
+    --shadow-shadow: var(--shadow);
+    --font-weight-base: 500;
+    --font-weight-heading: 700;
+}
+
+/* Set core body defaults */
+body {
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    text-rendering: optimizeSpeed;
+    font-family: "Lato", sans-serif;
+    background-color: #111;
+    /* Dot grid pattern */
+    background-image: radial-gradient(white 1px, transparent 0);
+    background-size: 40px 40px;
+    background-position: -19px -19px;
+    /* Dot grid pattern */
+}
+
+
+[data-platform="TWITCH"] {
+    --color-prim: #6441a5;
+    --color-text: #fff;
+    --color-sec: #3e1984;
+    --color-acc: #8149e7;
+}
+
+[data-platform="TWITTER"] {
+    --color-prim: #000;
+    --color-text: #fff;
+    --color-sec: #235e82;
+    --color-acc: #2598df;
+}
+
+[data-platform="KICK"] {
+    --color-prim: #00e701;
+    --color-text: #000;
+    --color-sec: #386638;
+    --color-acc: #5db25d;
+}
+
+[data-platform="YOUTUBE"] {
+    --color-prim: #FF0000;
+    --color-text: #fff;
+    --color-sec: #713939;
+    --color-acc: #b64c4c;
+}
