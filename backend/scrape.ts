@@ -20,6 +20,18 @@ const CONFIG: LaunchOptions = {
 	headless: true, 
 }
 
+export async function getProfile(platform: Platform, streamer: string, page: Page): Promise<string> {
+    switch(platform) {
+    case Platform.KICK:
+        return await page.$eval("img#channel-avatar", avatar => avatar.getAttribute("src") ?? "")
+    case Platform.TWITCH:
+        return await page.$eval(`img[alt=${streamer}]`, avatar => avatar.getAttribute("src") ?? "")
+    case Platform.TWITTER:
+    case Platform.YOUTUBE:
+    default: return ""
+    }
+}
+
 export async function kick(page: Page): Promise<Chat[]> {
 	const chat  = await page.$$eval("div.chat-entry > div", chats => {
 		return chats.map(el => {

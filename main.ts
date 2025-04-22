@@ -1,4 +1,4 @@
-import { getChat, goto, initBrowser } from "./backend/scrape.ts";
+import { getChat, getProfile, goto, initBrowser } from "./backend/scrape.ts";
 import { log, Resp, tryCatch, unwrap } from "./backend/util.ts";
 import { SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 import index from "./frontend/index.html" 
@@ -8,14 +8,52 @@ export const BROWSER = unwrap(await tryCatch(initBrowser()))
 
 type Routes = {
     "/*": RouterTypes.RouteValue<"/*">
-    "/api/:platform/:streamer": RouterTypes.RouteValue<"/api/:platform/:streamer">
+    "/api/:platform/:streamer/chat": RouterTypes.RouteValue<"/api/:platform/:streamer/chat">
+    "/api/:platform/:streamer/profile": RouterTypes.RouteValue<"/api/:platform/:streamer/profile">
 }
 
 const s = Bun.serve<WebSocketData, Routes>({
-	idleTimeout: 30,
+    idleTimeout: 30,
 	routes: {
 		"/*": index,
-        "/api/:platform/:streamer": req => {
+        "/api/:platform/:streamer/profile": async req => {
+            let {platform, streamer}: {platform: string, streamer: string} = req.params
+            platform = platform.toUpperCase()
+            streamer = streamer.toLowerCase()
+
+			if (!streamer) {
+				return Resp.BadRequest(`No Streamer Provided`)
+			} else if (!(platform in Platform)) {
+				return Resp.BadRequest(`Invalid Plaform: ${platform}`)
+			}
+
+            let site = ""
+			switch (platform) {
+            case Platform.TWITCH:
+                site = `https://twitch.tv/${streamer}`
+                break
+			case Platform.KICK:
+                site = `https://kick.com/${streamer}`
+                break
+            default:
+                return Resp.BadRequest(`Call to ${platform} is unimplemented`)
+			}
+
+            const [page, pageErr] = await tryCatch(goto(BROWSER, site))
+            if (!page) {
+                log.error(pageErr)
+                return Resp.BadRequest(`Error on visiting ${site}`)
+            }
+
+            const [profile, profileErr] = await tryCatch(getProfile(platform as Platform, streamer, page))
+            if (!profile) {
+                log.error(profileErr)
+                return Resp.BadRequest(`Error on fetching ${site} profile`)
+            }
+
+            return Resp.Ok(profile)
+        },
+        "/api/:platform/:streamer/chat": req => {
             const {platform, streamer}: {platform: string, streamer: string} = req.params
 
             if (!s.upgrade(req, {
