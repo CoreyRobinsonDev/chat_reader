@@ -21,15 +21,21 @@ const CONFIG: LaunchOptions = {
 }
 
 export async function getProfile(platform: Platform, streamer: string, page: Page): Promise<string> {
+    let profile = ""
+
     switch(platform) {
     case Platform.KICK:
-        return await page.$eval("img#channel-avatar", avatar => avatar.getAttribute("src") ?? "")
+        profile =  await page.$eval("img#channel-avatar", avatar => avatar.getAttribute("src") ?? "")
+        break
     case Platform.TWITCH:
-        return await page.$eval(`img[alt=${streamer}]`, avatar => avatar.getAttribute("src") ?? "")
+        profile = await page.$eval("div[aria-label=\"Channel Avatar Picture\"] img.tw-image.tw-image-avatar", avatar => avatar.getAttribute("src") ?? "") 
+        break
     case Platform.TWITTER:
     case Platform.YOUTUBE:
-    default: return ""
     }
+
+    await page.close()
+    return profile
 }
 
 export async function kick(page: Page): Promise<Chat[]> {
