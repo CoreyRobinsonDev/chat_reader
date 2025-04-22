@@ -47,8 +47,6 @@ export default function ComboboxWithCheckbox() {
                 return [...prev, {platform, name}]
             } else { return prev }
         })
-        setInput("")
-        inputRef.current!.value = ""
         inputRef.current!.focus()
     }, [])
 
