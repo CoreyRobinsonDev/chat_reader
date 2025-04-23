@@ -7,7 +7,10 @@ import type { RouterTypes } from "bun";
 export const BROWSER = unwrap(await tryCatch(initBrowser()))
 
 type Routes = {
+    "/": RouterTypes.RouteValue<"/">
     "/*": RouterTypes.RouteValue<"/*">
+    "/health": RouterTypes.RouteValue<"/health">
+    "/health/downstream": RouterTypes.RouteValue<"/health/downstream">
     "/api/:platform/:streamer/chat": RouterTypes.RouteValue<"/api/:platform/:streamer/chat">
     "/api/:platform/:streamer/profile": RouterTypes.RouteValue<"/api/:platform/:streamer/profile">
 }
@@ -15,7 +18,22 @@ type Routes = {
 const s = Bun.serve<WebSocketData, Routes>({
     idleTimeout: 30,
 	routes: {
-		"/*": index,
+		"/": index,
+        "/*": Resp.NotFound(),
+        "/health": Resp.Ok("Up"),
+        "/health/downstream": async () => {
+            const kickRes = await fetch("https://kick.com")
+            const twitchRes = await fetch("https://twitch.tv")
+
+            return Response.json({
+                status: 200,
+                message: "Up",
+                downstream: {
+                    twitch: twitchRes.ok ? "Up" : "Down",
+                    kick: kickRes.ok ? "Up" : "Down",
+                }
+            }, { status: 200 })
+        },
         "/api/:platform/:streamer/profile": async req => {
             let {platform, streamer}: {platform: string, streamer: string} = req.params
             platform = platform.toUpperCase()
