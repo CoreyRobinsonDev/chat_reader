@@ -39,19 +39,13 @@ services:
       - traefik.http.routers.mytlsrouter.rule=Host(`streamfeed.chat`)
       - traefik.http.routers.mytlsrouter.entrypoints=websecure
     deploy:
-      replicas: 3
+      replicas: 1
       update_config:
         parallelism: 1
-        delay: 1s
         order: start-first
         failure_action: rollback
-  sqlite:
-    image: nouchka/sqlite3:latest
-    volumes:
-      - db:/root/db
 volumes:
     letsencrypt:
-    db:
 secrets:
   CF_DNS_API_TOKEN:
     external: true
