@@ -12,8 +12,8 @@ import useChatScroll from "../hooks/useChatScroll"
 import type { Streamer } from "../util/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 
-const domain = "localhost:3000"
-// const domain = "streamfeed.chat"
+//const domain = "localhost:3000"
+const domain = "streamfeed.chat"
 
 const profileBlob = new Blob([
     `
@@ -81,7 +81,6 @@ export default function Chat() {
     const [profileUrls, setProfileUrls] = useState<{[U: string]: string}>({})
     const ref = useChatScroll()
 
-    console.log(chatMessages.length)
     useEffect(() => {
         for (let i = 0; i < streamers.length; i++) {
             const chatWorker = new Worker(URL.createObjectURL(chatBlob))
