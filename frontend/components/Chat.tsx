@@ -90,8 +90,8 @@ export default function Chat() {
 
             chatWorker.onmessage = (e: MessageEvent<ChatExtended[]>) => {
                 setChatMessages(prev => {
-                    if (prev.length > 100) {
-                        return [...prev.slice(-100), ...e.data]
+                    if (prev.length > 150) {
+                        return [...prev.slice(-150), ...e.data]
                     }
                     return prev.length === 0 ? e.data : [...prev, ...e.data]
                 })
