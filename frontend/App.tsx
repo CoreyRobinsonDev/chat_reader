@@ -1,19 +1,14 @@
 import { createRoot } from "react-dom/client"
 
 import ComboboxWithCheckbox from "./components/ui/combobox"
-import useWorker from "./hooks/useWorker"
-import { useEffect } from "react"
+import Chat from "./components/Chat"
 
 
 function App() {
-    const num = useWorker(10)
 
-    useEffect(() => {
-        console.log(num)
-    }, [num])
-
-    return <main>
+    return <main className="flex flex-col align-middle gap-4 p-4 w-screen max-h-screen">
         <ComboboxWithCheckbox /> 
+        <Chat />
     </main>
 }
 

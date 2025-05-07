@@ -27,6 +27,7 @@ import type { Streamer } from "../../util/types"
 
 
 export default function ComboboxWithCheckbox() {
+    console.count("ComboboxWithCheckbox")
     const [open, setOpen] = React.useState(false)
     const [input, setInput] = React.useState("")
     const [streamerListHistory, setStreamerListHistory] = useAtom(slh)
@@ -34,7 +35,9 @@ export default function ComboboxWithCheckbox() {
 
     const inputRef = React.useRef<HTMLInputElement>(null)
 
+    // FIX: clicks to removeStreamer props up and runs addStreamer so the selectedStreamer isn't removed
     const removeStreamer = React.useCallback((platform: Streamer["platform"], name: string) => {
+        setSelectedStreamers((prev) => prev.filter(streamer => streamer.name !== name || streamer.platform !== platform))
         setStreamerListHistory((prev) => prev.filter(streamer => streamer.name !== name || streamer.platform !== platform))
     },[])
 
@@ -70,13 +73,15 @@ export default function ComboboxWithCheckbox() {
                     variant="noShadow"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-fit min-w-[280px] max-w-screen justify-between"
+                    className="w-200 min-w-[280px] max-w-[97%] justify-between m-auto bg-main-foreground text-main shadow-shadow"
                 >
                     {selectedStreamers.length > 0
                         ? selectedStreamers.map((streamer) => streamer.name).join(", ")
                         : "Select streamers..."}
-                    <ChevronsUpDown className="text-muted-foreground" />
-                    <span className="px-1 py-.5 border-dotted border-2 opacity-50">/</span>
+                    <span className="flex gap-3">
+                        <ChevronsUpDown className="m-auto text-muted-foreground" />
+                        <span className="px-1 py-.5 border-dotted border-2 opacity-50">/</span>
+                    </span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0 border-0" align="start">
@@ -86,7 +91,7 @@ export default function ComboboxWithCheckbox() {
                         <CommandEmpty>
                             <p className="pb-2">Add Streamer</p>
                         </CommandEmpty>
-                        <CommandGroup className="p-2 [&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-1">
+                        <CommandGroup className="p-2 [&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-1 border-y-1 border-main-foreground">
                             {streamerListHistory.map((streamer) => (
                                 <CommandItem
                                     key={streamer.name+streamer.platform}
@@ -94,18 +99,16 @@ export default function ComboboxWithCheckbox() {
                                     className="group flex justify-between w-full"
                                     onSelect={(val) => {
                                         const currentStreamer: Streamer = JSON.parse(val)
-                                        setSelectedStreamers(
-                                            selectedStreamers.some((f) => f.name === currentStreamer.name && f.platform === currentStreamer.platform)
-                                                ? selectedStreamers.filter(
-                                                    (f) => f.name !== currentStreamer.name && f.platform !== currentStreamer.platform,
-                                                )
-                                                : [...selectedStreamers, streamer],
+                                        setSelectedStreamers(prev => 
+                                            prev.some(item => item.name === currentStreamer.name && item.platform === currentStreamer.platform) 
+                                            ? prev.filter(item => item.name !== currentStreamer.name || item.platform !== currentStreamer.platform)
+                                            : [...prev, currentStreamer]
                                         )
                                     }}
                                 >
                                     <div className="flex align-middle gap-2">
                                         <div
-                                            className="grid place-content-center border-border pointer-events-none size-5 shrink-0 rounded-base border-2 transition-all select-none *:[svg]:opacity-0 data-[selected=true]:*:[svg]:opacity-100"
+                                            className="grid place-content-center border-main-foreground pointer-events-none size-5 shrink-0 rounded-base border-2 transition-all select-none *:[svg]:opacity-0 data-[selected=true]:*:[svg]:opacity-100"
                                             data-selected={selectedStreamers.some(
                                                 (f) => f.name === streamer.name && f.platform === streamer.platform
                                             )}
@@ -130,22 +133,22 @@ export default function ComboboxWithCheckbox() {
                 </Command>
                 <div className="flex gap-2 justify-evenly flex-wrap p-2">
                     <Button 
-                        className="truncate w-fit max-w-full" 
+                        className="truncate w-fit max-w-full border-black" 
                         variant="reverse" 
                         onClick={() => addStreamer("TWITCH", input)}
                     ><Twitch />{input}</Button>
                     <Button 
-                        className="truncate w-fit max-w-full" 
+                        className="truncate w-fit max-w-full border-black" 
                         variant="reverse" 
                         onClick={() => addStreamer("KICK", input)}
                     ><Kick />{input}</Button>
                     <Button 
-                        className="truncate w-fit max-w-full" 
+                        className="truncate w-fit max-w-full border-black" 
                         variant="reverse" 
                         onClick={() => addStreamer("YOUTUBE", input)}
                     ><Youtube />{input}</Button>
                     <Button 
-                        className="truncate w-fit max-w-full" 
+                        className="truncate w-fit max-w-full border-black" 
                         variant="reverse" 
                         onClick={() => addStreamer("TWITTER", input)}
                     ><Twitter />{input}</Button>

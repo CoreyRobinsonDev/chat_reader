@@ -63,13 +63,13 @@ const s = Bun.serve<WebSocketData, Routes>({
                 return Resp.BadRequest(`Error on visiting ${site}`)
             }
 
-            const [profile, profileErr] = await tryCatch(getProfile(platform as Platform, streamer, page))
-            if (!profile) {
-                log.error(profileErr)
+            const [profileUrl, profileUrlErr] = await tryCatch(getProfile(platform as Platform, streamer, page))
+            if (!profileUrl) {
+                log.error(profileUrlErr)
                 return Resp.BadRequest(`Error on fetching ${site} profile`)
             }
 
-            return Resp.Ok(profile)
+            return Resp.Ok(profileUrl)
         },
         "/api/:platform/:streamer/chat": req => {
             const {platform, streamer}: {platform: string, streamer: string} = req.params

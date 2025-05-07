@@ -1,5 +1,4 @@
 export type Streamer = {
-    profileURL?: string
     platform: "TWITCH" 
     | "TWITTER"
     | "YOUTUBE"

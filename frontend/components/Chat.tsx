@@ -1,84 +1,168 @@
-import { useEffect, useRef } from "react"
-import type { Chat } from "../../backend/types"
-import { FaTwitch, FaTwitter, FaYoutube, FaInfoCircle } from "react-icons/fa"
-import { SiKick } from "react-icons/si"
-import { MdCancel } from "react-icons/md"
-import type { JSX } from "react"
-import useFetchChats from "../hooks/useFetchChat"
+import { useEffect, useState, type JSX  } from "react"
 
-export default function Chat(
-    {streamerList, setStreamerList}: {
-        streamerList: {platform: string, streamer: string }[],
-        setStreamerList: React.Dispatch<React.SetStateAction<{
-            streamer: string;
-            platform: string;
-        }[]>>
-    }
-) {
-    const [chatStreams, webSockets, setWebSockets] = useFetchChats(streamerList)
-    const messageEnd = useRef<HTMLDivElement>(null)
+import Twitter from "../components/ui/icons/Twitter"
+import Twitch from "../components/ui/icons/Twitch"
+import Kick from "../components/ui/icons/Kick"
+import Youtube from "../components/ui/icons/Youtube"
+import { Card, CardContent } from "./ui/card"
+import type { Chat, } from "../../backend/types"
+import { useAtomValue } from "jotai"
+import { streamerList as sl } from "../util/atoms"
+import useChatScroll from "../hooks/useChatScroll"
+import type { Streamer } from "../util/types"
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 
-    const icon: {[U: string]: JSX.Element} = {
-        TWITCH: <FaTwitch />,
-        TWITTER: <FaTwitter />,
-        KICK: <SiKick />,
-        YOUTUBE: <FaYoutube />
-    }
+const domain = "localhost:3000"
+// const domain = "streamfeed.chat"
 
-    const removeStreamer = (platform: string, streamer: string) => {
-        setStreamerList(prev => {
-            const updated = prev.filter(item => (streamer !== item.streamer || platform !== item.platform))
-            localStorage.setItem("streamerList", JSON.stringify(updated))
+const profileBlob = new Blob([
+    `
+    self.onmessage = async (e) => {
+        const platform = e.data.platform
+        const name = e.data.name
 
-            // NOTE: adding this logic outside of the useFetchChats hooks because for some reason updating streamerList to an empty array doesn't trigger the useEffect
-            if (updated.length === 0) {
-                webSockets.forEach(ws => ws.close())
-                setWebSockets([])
-            }
-            return updated 
+        const profileUrl = await fetch(\`http://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
+            .then(res => res.json())
+
+        postMessage({
+            name,
+            platform,
+            profileUrl: profileUrl.message
         })
     }
+`
+])
+const chatBlob = new Blob([
+    `
+    self.onmessage = async (e) => {
+        const platform = e.data.platform
+        const name = e.data.name
 
+        const ws = new WebSocket(\`ws://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
+
+        ws.addEventListener("message", e => {
+            const data = JSON.parse(e.data).map(item => {
+                item.name = name
+                item.platform = platform
+                return item
+            })
+            postMessage(data)
+        })
+
+        ws.addEventListener("close", e => {
+            postMessage([{
+                name,
+                platform,
+                userName: "Error",
+                userColor: [255,8,10],
+                content: \`(\$\{e.code\}) \$\{e.reason\}\`
+            }])
+        })
+
+        postMessage([{
+            name,
+            platform,
+            userName: "Info",
+            userColor: [0,80,255],
+            content: \`Connecting to \$\{name\}'s chat on \$\{platform.toLowerCase()\}...\`
+        }])
+    }
+`
+], {type: "application/typescript"})
+
+type ChatExtended = Chat & {
+    name: string,
+    platform: Streamer["platform"],
+}
+
+export default function Chat() {
+    const streamers = useAtomValue(sl)
+    const [chatMessages, setChatMessages] = useState<ChatExtended[]>([])
+    const [profileUrls, setProfileUrls] = useState<{[U: string]: string}>({})
+    const ref = useChatScroll()
+
+    console.log(chatMessages.length)
     useEffect(() => {
-        const t = setTimeout(() => {
-            messageEnd.current?.scrollIntoView({behavior: "smooth"})
-        }, 300)
-        return () => clearTimeout(t)
-    }, [chatStreams])
+        for (let i = 0; i < streamers.length; i++) {
+            const chatWorker = new Worker(URL.createObjectURL(chatBlob))
+            const profileWorker = new Worker(URL.createObjectURL(profileBlob))
+            chatWorker.postMessage(streamers[i])
+            profileWorker.postMessage(streamers[i])
 
-    return <section className="chat">
-        <ul className="message-list">
-            {chatStreams.length > 0
-                ? chatStreams.map((chatStream, i) => 
-                    chatStream.chat.map((item, key) => <li className="message" key={`chat-${i}${key}`}>
-                    <span className="message-content">
-                    <span title={chatStream.streamer} data-platform={chatStream.platfrom} className="mini-icon">{icon[chatStream.platfrom]}</span>
-                    <span 
-                        className="message-username"
-                        style={{color: `rgb(${item.userColor[0]},${item.userColor[1]},${item.userColor[2]})`}}
-                    >{item.userName}</span>:
-                        {
-                        item.content.split(" ").map(word => typeof item?.emoteContainer?.[word] !== "undefined"
-                            ? <img title={word} src={item.emoteContainer[word]} alt={word} height="32px" />
-                            : <span>{word}</span>)
-                    }</span></li>))
-                : <li className="message-content">
-                    <span className="mini-icon"><FaInfoCircle /></span>
-                    <span style={{color: "dodgerblue"}}>Info</span>: Connecting to chat...
-                </li>}
-            <div ref={messageEnd}></div>
-        </ul>
-        <ul>
-            {streamerList.map((item, key) => <button className="streamer-list" key={`list-${key}`}>
-                <span className="mini-icon" data-platform={item.platform}>{icon[item.platform]}</span>
-                <span>{item.streamer}</span>
+            chatWorker.onmessage = (e: MessageEvent<ChatExtended[]>) => {
+                setChatMessages(prev => {
+                    if (prev.length > 100) {
+                        return [...prev.slice(-100), ...e.data]
+                    }
+                    return prev.length === 0 ? e.data : [...prev, ...e.data]
+                })
+            }
+
+            profileWorker.onmessage = (e: MessageEvent<{
+                name: string,
+                platform: Streamer["platform"],
+                profileUrl: string
+            }>) => {
+                setProfileUrls(prev => {
+                    return typeof prev === "undefined"
+                        ? {[e.data.name]: e.data.profileUrl}
+                        : {[e.data.name]: e.data.profileUrl, ...prev}
+                })
+            }
+        }
+    },[streamers])
+
+
+    return <Card className="w-200 max-w-[97%] max-h-300 m-auto p-2">
+        <CardContent 
+            className="overflow-y-scroll no-scrollbar w-full"
+            ref={ref}
+        >
+            {
+                chatMessages.length === 0
+                ? <></>
+                : chatMessages
+                    .map((chatMsg, i) => <Message key={`chatMsg-${i}`} chatMsg={chatMsg} profileUrls={profileUrls} />)
+            }
+
+        </CardContent>
+    </Card>
+}
+
+function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[U: string]: string}}) {
+    const icon: {[U: string]: JSX.Element} = {
+        TWITCH: <Twitch data-platform="TWITCH" className="w-5 text-brand" />,
+        TWITTER: <Twitter data-platform="TWITTER" className="w-5 text-brand"/>,
+        KICK: <Kick data-platform="KICK" className="w-5 text-brand"/>,
+        YOUTUBE: <Youtube data-platform="YOUTUBE" className="w-5 text-brand"/>
+    }
+
+    return <p data-platform={chatMsg.platform} 
+        className="flex gap-1 border-l-4 border-brand pl-1"
+    >
+        <span className="flex gap-x-1 flex-wrap" data-meta={JSON.stringify(chatMsg)}>
+            <Avatar>
+                <AvatarImage className="w-5 rounded" src={profileUrls[chatMsg.name]} alt={chatMsg.name} />
+                <AvatarFallback>{chatMsg.name[0].toUpperCase() + chatMsg.name.at(-1)?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+            {/*<span data-platform={chatMsg.platform} className="m-y-auto text-brand stroke-brand">{icon[chatMsg.platform]}</span>*/}
+            <span>
                 <span 
-                    tabIndex={0}
-                    className="streamer-list_remove" 
-                    onClick={() => removeStreamer(item.platform, item.streamer)}
-                ><MdCancel /></span>
-            </button>)}
-        </ul>
-    </section>
+                    style={{color: `rgb(${chatMsg.userColor[0]}, ${chatMsg.userColor[1]}, ${chatMsg.userColor[2]})`}}
+                >{chatMsg.userName}</span>
+                <span>:</span>
+            </span>
+            {
+            chatMsg.content.split(" ").map(word => (
+                typeof chatMsg.emoteContainer !== "undefined" && typeof chatMsg.emoteContainer[word] !== "undefined"
+                ? <img 
+                    className="h-8"
+                    src={chatMsg.emoteContainer[word]} 
+                    alt={word} 
+                />
+                : <span>{word}</span>
+            ))
+        }</span>
+    </p>
 }
 
