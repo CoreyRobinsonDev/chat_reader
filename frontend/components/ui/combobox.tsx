@@ -27,7 +27,6 @@ import type { Streamer } from "../../util/types"
 
 
 export default function ComboboxWithCheckbox() {
-    console.count("ComboboxWithCheckbox")
     const [open, setOpen] = React.useState(false)
     const [input, setInput] = React.useState("")
     const [streamerListHistory, setStreamerListHistory] = useAtom(slh)
