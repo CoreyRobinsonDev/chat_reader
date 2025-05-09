@@ -12,8 +12,8 @@ import useChatScroll from "../hooks/useChatScroll"
 import type { Streamer } from "../util/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 
-//const domain = "localhost:3000"
-const domain = "streamfeed.chat"
+const domain = "localhost:3000"
+// const domain = "streamfeed.chat"
 
 const profileBlob = new Blob([
     `
@@ -21,7 +21,7 @@ const profileBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const profileUrl = await fetch(\`https://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
+        const profileUrl = await fetch(\`http://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
             .then(res => res.json())
 
         postMessage({
@@ -38,7 +38,7 @@ const chatBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const ws = new WebSocket(\`wss://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
+        const ws = new WebSocket(\`ws://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
 
         ws.addEventListener("message", e => {
             const data = JSON.parse(e.data).map(item => {
@@ -139,15 +139,17 @@ function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[
     return <p data-platform={chatMsg.platform} 
         className="flex gap-1 border-l-4 border-brand pl-1"
     >
-        <span className="flex gap-x-1 flex-wrap" data-meta={JSON.stringify(chatMsg)}>
+        <span className="flex gap-x-1 flex-wrap align-middle" data-meta={JSON.stringify(chatMsg)}>
             <Avatar>
-                <AvatarImage className="w-5 rounded" src={profileUrls[chatMsg.name]} alt={chatMsg.name} />
+                <AvatarImage className="w-5 h-5 rounded m-auto" src={profileUrls[chatMsg.name]} alt={chatMsg.name} />
                 <AvatarFallback>{chatMsg.name[0].toUpperCase() + chatMsg.name.at(-1)?.toUpperCase()}</AvatarFallback>
             </Avatar>
+            { chatMsg.badgeImg && <img className="w-5 h-5 m-auto" src={chatMsg.badgeImg} alt={chatMsg.badgeName} />}
             {/*<span data-platform={chatMsg.platform} className="m-y-auto text-brand stroke-brand">{icon[chatMsg.platform]}</span>*/}
             <span>
                 <span 
                     style={{color: `rgb(${chatMsg.userColor[0]}, ${chatMsg.userColor[1]}, ${chatMsg.userColor[2]})`}}
+                    className="font-bold"
                 >{chatMsg.userName}</span>
                 <span>:</span>
             </span>
