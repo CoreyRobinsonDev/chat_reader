@@ -71,7 +71,13 @@ const s = Bun.serve<WebSocketData, Routes>({
 
             return Resp.Ok(profileUrl)
         },
-        "/api/:platform/:streamer/chat": req => {
+        "/api/:platform/:streamer/chat": async req => {
+            // TODO: sleeping to prevent a burst request to 3rd party sites
+            // surely there's a better way
+            const sec = [1000, 2000, 3000]
+            const offset = Math.floor(Math.random() * 3)
+            await Bun.sleep(sec[offset])
+
             const {platform, streamer}: {platform: string, streamer: string} = req.params
 
             if (!s.upgrade(req, {
@@ -174,7 +180,7 @@ const s = Bun.serve<WebSocketData, Routes>({
                             log.debug(`[${clientId}] has disconnected`)
                             log.debug(`\t${platform} streamer ${streamer} is offline`)
                             ws.unsubscribe(platform+streamer)
-                            ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+                            ws.close(SocketCode.BadRequest, `${platform.toLowerCase()} streamer ${streamer} is offline`)
                             await page.close()
                             return
                         }
@@ -188,7 +194,7 @@ const s = Bun.serve<WebSocketData, Routes>({
                         if (emptyResponses >= emptyRepsonseLimit) {
                             log.debug(`[${clientId}] has disconnected`)
                             log.debug(`\t${platform} streamer ${streamer} is offline`)
-                            ws.close(SocketCode.BadRequest, `${platform} streamer ${streamer} is offline`)
+                            ws.close(SocketCode.BadRequest, `${platform.toLowerCase()} streamer ${streamer} is offline`)
                             await page.close()
                             return
                         }

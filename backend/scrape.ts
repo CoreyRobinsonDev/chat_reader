@@ -3,6 +3,7 @@ import stealthPlugin from "puppeteer-extra-plugin-stealth"
 import puppeteer from "puppeteer-extra"
 import { Platform, type Chat } from "./types";
 import path from "path";
+import { log } from "./util";
 
 
 const MAX_TIMEOUT: number = 30_000
@@ -17,7 +18,7 @@ const CONFIG: LaunchOptions = {
 	defaultViewport: { width: 1980, height: 1024 },
 	slowMo: 50, 
 	executablePath: executablePath(),
-	headless: true, 
+	headless: true 
 }
 
 export async function getProfile(platform: Platform, streamer: string, page: Page): Promise<string> {
@@ -39,55 +40,55 @@ export async function getProfile(platform: Platform, streamer: string, page: Pag
 }
 
 export async function kick(page: Page): Promise<Chat[]> {
-	const chat  = await page.$$eval("div.chat-entry > div", chats => {
-		return chats.map(el => {
-			const badgeImg = el.querySelector("img.icon")?.getAttribute("src")
-			const badgeName = el.querySelector("img.icon")?.getAttribute("alt")
-			const userName = el.querySelector(".chat-entry-username")?.textContent
-			const userColor = el.querySelector(".chat-entry-username")?.getAttribute("style")
-				?.split("(").at(-1)
-				?.split(",")
-				.slice(0, 3)
-				.map((el, idx) => {
-					if (idx === 2) {
-						return Number(el.trim().split(")")[0])
-					}
-					return Number(el.trim())
-				})
-			const contentHTML = el.querySelector(".font-bold.text-white + span")?.children
-			let content = ""
-			let emoteContainer: Chat["emoteContainer"] = {}
-			for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
-				const className = contentHTML?.item(i)?.querySelector(".chat-emote-container, .chat-entry-content")?.className
-				if (className === "chat-emote-container") {
-					const emoteName = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("alt")
-					const emoteSrc = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("src")
-					if (content.length > 0) {
-						content += " " + emoteName
-					} else { content += emoteName }
-					if (typeof emoteName === "string") {
-						emoteContainer[emoteName] = emoteSrc ?? "ERR"
-					}
-				} else if (className === "chat-entry-content") {
-					if (content.length > 0) {
-						content += " " + contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
-					} else {
-						content += contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
-					}
-				}
-			}
+    const chat  = await page.$$eval("div.chat-entry > div", chats => {
+        return chats.map(el => {
+            const badgeImg = el.querySelector("img.icon")?.getAttribute("src")
+            const badgeName = el.querySelector("img.icon")?.getAttribute("alt")
+            const userName = el.querySelector(".chat-entry-username")?.textContent
+            const userColor = el.querySelector(".chat-entry-username")?.getAttribute("style")
+                ?.split("(").at(-1)
+                ?.split(",")
+                .slice(0, 3)
+                .map((el, idx) => {
+                    if (idx === 2) {
+                        return Number(el.trim().split(")")[0])
+                    }
+                    return Number(el.trim())
+                })
+            const contentHTML = el.querySelector(".font-bold.text-white + span")?.children
+            let content = ""
+            let emoteContainer: Chat["emoteContainer"] = {}
+            for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
+                const className = contentHTML?.item(i)?.querySelector(".chat-emote-container, .chat-entry-content")?.className
+                if (className === "chat-emote-container") {
+                    const emoteName = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("alt")
+                    const emoteSrc = contentHTML?.item(i)?.querySelector(".chat-emote-container > div > img")?.getAttribute("src")
+                    if (content.length > 0) {
+                        content += " " + emoteName
+                    } else { content += emoteName }
+                    if (typeof emoteName === "string") {
+                        emoteContainer[emoteName] = emoteSrc ?? "ERR"
+                    }
+                } else if (className === "chat-entry-content") {
+                    if (content.length > 0) {
+                        content += " " + contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
+                    } else {
+                        content += contentHTML?.item(i)?.querySelector(".chat-entry-content")?.textContent
+                    }
+                }
+            }
 
 
-			return {
-				badgeName: badgeName ? badgeName : undefined,
-				badgeImg: badgeImg ? badgeImg : undefined,
-				userName: userName ? userName : "ERR",
-				userColor: userColor ? userColor : [0,0,0],
-				content,
-				emoteContainer: Object.keys(emoteContainer).length > 0 ? emoteContainer : undefined
-			}
-		})
-	}) ?? []
+            return {
+                badgeName: badgeName ? badgeName : undefined,
+                badgeImg: badgeImg ? badgeImg : undefined,
+                userName: userName ? userName : "ERR",
+                userColor: userColor ? userColor : [0,0,0],
+                content,
+                emoteContainer: Object.keys(emoteContainer).length > 0 ? emoteContainer : undefined
+            }
+        })
+    }) ?? []
 
 	return chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0)
 }
@@ -95,7 +96,7 @@ export async function kick(page: Page): Promise<Chat[]> {
 export async function twitch(page: Page): Promise<Chat[]> {
     const chat = await page.$$eval("main.seventv-chat-list > div", chats => {
         return chats.map(el => {
-			const badgeImg = el.querySelector(".seventv-chat-badge > img")?.getAttribute("srcset")?.split(",").at(-1)?.split(" ")[1]
+			const badgeImg = el.querySelector(".seventv-chat-badge > img")?.getAttribute("srcset")?.split(", ").at(-1)?.slice(0, -3)
 			const badgeName = el.querySelector(".seventv-chat-badge > img")?.getAttribute("alt")
 			const userName = el.querySelector(".seventv-chat-user-username")?.textContent
 			const userColor = el.querySelector(".seventv-chat-user")?.getAttribute("style")
