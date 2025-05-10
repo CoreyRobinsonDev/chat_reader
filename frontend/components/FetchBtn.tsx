@@ -4,8 +4,8 @@ import { useAtom, useSetAtom } from "jotai";
 import { profileUrls, queriedMessages, streamerList } from "../atoms";
 import { Button } from "./ui/button";
 
-const domain = "localhost:3000"
-// const domain = "streamfeed.chat"
+// const domain = "localhost:3000"
+const domain = "streamfeed.chat"
 
 export function FetchBtn() {
     const [streamers, setStreamers] = useAtom(streamerList)
@@ -74,7 +74,7 @@ const profileBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const profileUrl = await fetch(\`http://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
+        const profileUrl = await fetch(\`https://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
             .then(res => res.json())
 
         postMessage({
@@ -91,7 +91,7 @@ const chatBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const ws = new WebSocket(\`ws://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
+        const ws = new WebSocket(\`wss://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
 
         ws.addEventListener("message", e => {
             const data = JSON.parse(e.data).map(item => {
