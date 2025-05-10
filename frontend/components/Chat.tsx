@@ -1,9 +1,3 @@
-import { type JSX  } from "react"
-
-import Twitter from "../components/ui/icons/Twitter"
-import Twitch from "../components/ui/icons/Twitch"
-import Kick from "../components/ui/icons/Kick"
-import Youtube from "../components/ui/icons/Youtube"
 import { Card, CardContent } from "./ui/card"
 import type { Chat, } from "../../backend/types"
 import useChatScroll from "../hooks/useChatScroll"
@@ -11,7 +5,6 @@ import type { ChatExtended } from "../util/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 import { useAtomValue } from "jotai"
 import { profileUrls as pu, queriedMessages } from "../atoms"
-
 
 
 
@@ -37,12 +30,6 @@ export default function Chat() {
 }
 
 function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[U: string]: string}}) {
-    const icon: {[U: string]: JSX.Element} = {
-        TWITCH: <Twitch data-platform="TWITCH" className="w-5 text-brand" />,
-        TWITTER: <Twitter data-platform="TWITTER" className="w-5 text-brand-fg"/>,
-        KICK: <Kick data-platform="KICK" className="w-5 text-brand"/>,
-        YOUTUBE: <Youtube data-platform="YOUTUBE" className="w-5 text-brand"/>
-    }
 
     return <p data-platform={chatMsg.platform} 
         className="flex gap-1 border-l-4 border-brand pl-1"
@@ -53,7 +40,6 @@ function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[
                 <AvatarFallback>{chatMsg.name[0].toUpperCase() + chatMsg.name.at(-1)?.toUpperCase()}</AvatarFallback>
             </Avatar>
             { chatMsg.badgeImg && <img className="w-5 h-5 m-auto" src={chatMsg.badgeImg} alt={chatMsg.badgeName} />}
-            {/*<span data-platform={chatMsg.platform} className="m-y-auto text-brand stroke-brand">{icon[chatMsg.platform]}</span>*/}
             <span>
                 <span 
                     style={{color: `rgb(${chatMsg.userColor[0]}, ${chatMsg.userColor[1]}, ${chatMsg.userColor[2]})`}}

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChatExtended, Streamer } from "../util/types";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { profileUrls, queriedMessages, streamerList } from "../atoms";
 import { Button } from "./ui/button";
 
@@ -8,11 +8,16 @@ const domain = "localhost:3000"
 // const domain = "streamfeed.chat"
 
 export function FetchBtn() {
-    const streamers = useAtomValue(streamerList)
+    const [streamers, setStreamers] = useAtom(streamerList)
     const [queriedStreamers, setQueriedStreamers] = useState<Streamer[]>([])
     const setChatMessages = useSetAtom(queriedMessages)
     const setProfileUrls = useSetAtom(profileUrls)
 
+    useEffect(() => {
+        if (queriedStreamers.length === 0) {
+            setStreamers(prev => prev.map(s => {s.connected = "FAIL"; return s}))
+        }
+    }, [])
 
     const queryStreamers = () => {
         const delta = streamers.filter(s => !queriedStreamers.some(qs => qs.name === s.name && qs.platform === s.platform))
@@ -24,10 +29,16 @@ export function FetchBtn() {
             profileWorker.postMessage(delta[i])
 
             chatWorker.onmessage = (e: MessageEvent<ChatExtended[]>) => {
+                setStreamers(prev => prev.map(s => {
+                    if (s.name === e.data[0].name && s.platform === e.data[0].platform) {
+                        s.connected = e.data[0].connected
+                    }
+                    return s
+                }))
                 setChatMessages(prev => {
-                    // NOTE: would be cool to up the array length but limit the displayed amount, but allow chatter logs search
-                    if (prev.length > 150) {
-                        return [...prev.slice(-150), ...e.data]
+                    // NOTE: would be cool to up the array length but limit the displayed amount to allow chatter logs search
+                    if (prev.length > 200) {
+                        return [...prev.slice(-200), ...e.data]
                     }
                     return prev.length === 0 ? e.data : [...prev, ...e.data]
                 })
@@ -54,7 +65,7 @@ export function FetchBtn() {
         className="bg-yellow-300 border-black cursor-pointer font-bold mt-1"
         variant="reverse"
         onClick={queryStreamers}
-    >Connect</Button>
+    >{streamers.some(streamer => streamer.connected === "PENDING") ? <span className="spinner"></span> : "Connect"}</Button>
 }
 
 const profileBlob = new Blob([
