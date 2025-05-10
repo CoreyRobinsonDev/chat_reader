@@ -1,34 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
-import type { Chat } from "../../backend/types";
-import type { Streamer } from "../util/types";
-import { useAtomValue } from "jotai";
-import { streamerList } from "../atoms";
+import { useState } from "react";
+import type { ChatExtended, Streamer } from "../util/types";
+import { useAtomValue, useSetAtom } from "jotai";
+import { profileUrls, queriedMessages, streamerList } from "../atoms";
 import { Button } from "./ui/button";
 
-// const domain = "localhost:3000"
-const domain = "streamfeed.chat"
+const domain = "localhost:3000"
+// const domain = "streamfeed.chat"
 
-export function FetchBtn(
-    {setChatMessages, setProfileUrls}:
-    {
-        setChatMessages: React.Dispatch<React.SetStateAction<(Chat & {
-            name: string,
-            platform: Streamer["platform"],
-        })[]>>,
-        setProfileUrls: React.Dispatch<React.SetStateAction<{
-            [U: string]: string;
-        }>>
-    }
-) {
+export function FetchBtn() {
     const streamers = useAtomValue(streamerList)
-    // const [streamers, setStreamers] = useState(streamerListFromStore)
     const [queriedStreamers, setQueriedStreamers] = useState<Streamer[]>([])
+    const setChatMessages = useSetAtom(queriedMessages)
+    const setProfileUrls = useSetAtom(profileUrls)
 
-    // useEffect(() => {
-    //     setStreamers(streamerListFromStore)
-    //     console.log("from effect:", streamers)
-    //     console.log("from effect:", streamerListFromStore)
-    // }, [streamerListFromStore])
 
     const queryStreamers = () => {
         const delta = streamers.filter(s => !queriedStreamers.some(qs => qs.name === s.name && qs.platform === s.platform))
@@ -39,7 +23,7 @@ export function FetchBtn(
             chatWorker.postMessage(delta[i])
             profileWorker.postMessage(delta[i])
 
-            chatWorker.onmessage = (e: MessageEvent<(Chat & {name: string, platform: Streamer["platform"]})[]>) => {
+            chatWorker.onmessage = (e: MessageEvent<ChatExtended[]>) => {
                 setChatMessages(prev => {
                     // NOTE: would be cool to up the array length but limit the displayed amount, but allow chatter logs search
                     if (prev.length > 150) {
@@ -79,7 +63,7 @@ const profileBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const profileUrl = await fetch(\`https://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
+        const profileUrl = await fetch(\`http://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/profile\`)
             .then(res => res.json())
 
         postMessage({
@@ -96,12 +80,13 @@ const chatBlob = new Blob([
         const platform = e.data.platform
         const name = e.data.name
 
-        const ws = new WebSocket(\`wss://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
+        const ws = new WebSocket(\`ws://${domain}/api/\$\{platform.toLowerCase()\}/\$\{name.toLowerCase()\}/chat\`)
 
         ws.addEventListener("message", e => {
             const data = JSON.parse(e.data).map(item => {
                 item.name = name
                 item.platform = platform
+                item.connected = "SUCCESS"
                 return item
             })
             postMessage(data)
@@ -111,6 +96,7 @@ const chatBlob = new Blob([
             postMessage([{
                 name,
                 platform,
+                connected: "FAIL",
                 userName: "Error",
                 userColor: [255,8,10],
                 content: \`(\$\{e.code\}) \$\{e.reason\}\`
@@ -121,6 +107,7 @@ const chatBlob = new Blob([
             name,
             platform,
             userName: "Info",
+            connected: "PENDING",
             userColor: [0,80,255],
             content: \`Connecting to \$\{name\}'s chat on \$\{platform.toLowerCase()\}...\`
         }])

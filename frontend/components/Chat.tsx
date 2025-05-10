@@ -7,16 +7,17 @@ import Youtube from "../components/ui/icons/Youtube"
 import { Card, CardContent } from "./ui/card"
 import type { Chat, } from "../../backend/types"
 import useChatScroll from "../hooks/useChatScroll"
-import type { Streamer } from "../util/types"
+import type { ChatExtended } from "../util/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
+import { useAtomValue } from "jotai"
+import { profileUrls as pu, queriedMessages } from "../atoms"
 
 
 
 
-export default function Chat(
-    {chatMessages, profileUrls}: 
-    {chatMessages: (Chat & {name: string, platform: Streamer["platform"]})[], profileUrls: {[U:string]: string}}
-) {
+export default function Chat() {
+    const chatMessages = useAtomValue(queriedMessages)
+    const profileUrls = useAtomValue(pu)
     const ref = useChatScroll()
 
     return <Card className="w-200 max-w-[97%] max-h-300 m-auto p-2">
@@ -35,7 +36,7 @@ export default function Chat(
     </Card>
 }
 
-function Message({chatMsg, profileUrls}: {chatMsg: Chat & {name: string, platform: Streamer["platform"]}, profileUrls: {[U: string]: string}}) {
+function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[U: string]: string}}) {
     const icon: {[U: string]: JSX.Element} = {
         TWITCH: <Twitch data-platform="TWITCH" className="w-5 text-brand" />,
         TWITTER: <Twitter data-platform="TWITTER" className="w-5 text-brand-fg"/>,
