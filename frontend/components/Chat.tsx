@@ -5,6 +5,7 @@ import type { ChatExtended } from "../util/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
 import { useAtomValue } from "jotai"
 import { profileUrls as pu, queriedMessages } from "../atoms"
+import { emojis, type Emojis } from "@coreyrobinsondev/emoji"
 
 
 
@@ -50,11 +51,13 @@ function Message({chatMsg, profileUrls}: {chatMsg: ChatExtended, profileUrls: {[
             {
             chatMsg.content.split(" ").map(word => (
                 typeof chatMsg.emoteContainer !== "undefined" && typeof chatMsg.emoteContainer[word] !== "undefined"
-                ? <img 
-                    className="h-8"
-                    src={chatMsg.emoteContainer[word]} 
-                    alt={word} 
-                />
+                ? !chatMsg.emoteContainer[word].includes("png")
+                    ? <img 
+                        className="h-8"
+                        src={chatMsg.emoteContainer[word]} 
+                        alt={word} 
+                    />
+                    : <span>{emojis[word as keyof Emojis].char}</span>
                 : <span>{word}</span>
             ))
         }</span>

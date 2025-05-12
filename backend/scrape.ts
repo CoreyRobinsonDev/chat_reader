@@ -3,7 +3,7 @@ import stealthPlugin from "puppeteer-extra-plugin-stealth"
 import puppeteer from "puppeteer-extra"
 import { Platform, type Chat } from "./types";
 import path from "path";
-import { log } from "./util";
+import { emojis, type Emojis } from "@coreyrobinsondev/emoji"
 
 
 const MAX_TIMEOUT: number = 30_000
@@ -90,7 +90,18 @@ export async function kick(page: Page): Promise<Chat[]> {
         })
     }) ?? []
 
-	return chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0)
+	return chat
+        .reverse()
+        .filter(el => el.userName !== "ERR" || el.content.length !== 0)
+        .map(el => {
+            if (!el.emoteContainer) return el
+            
+            for (const key of Object.keys(el.emoteContainer)) {
+                el.emoteContainer[key] = emojis[key as keyof Emojis] ? emojis[key as keyof Emojis].emojiBlob : el.emoteContainer[key]
+            }
+
+            return el
+        })
 }
 
 export async function twitch(page: Page): Promise<Chat[]> {
@@ -114,14 +125,15 @@ export async function twitch(page: Page): Promise<Chat[]> {
 			let emoteContainer: Chat["emoteContainer"] = {}
 			for (let i = 0; i < (contentHTML?.length ?? 0); i++) {
 				if (contentHTML.item(i).children.length !== 0) {
-					const emoteName = contentHTML.item(i).firstElementChild?.getAttribute("alt")
-					const emoteSrc = "https:" + contentHTML.item(i).firstElementChild?.getAttribute("srcset")
+					let emoteSrc = contentHTML.item(i).firstElementChild?.getAttribute("srcset")
                         ?.split(",").at(-1)?.split(" ")[1]
+					const emoteName = contentHTML.item(i).firstElementChild?.getAttribute("alt")
+
 					if (content.length > 0) {
 						content += " " + emoteName
 					} else { content += emoteName }
 					if (typeof emoteName === "string") {
-						emoteContainer[emoteName] = emoteSrc ?? "ERR"
+						emoteContainer[emoteName] = emoteSrc ? "https:" + emoteSrc : "ERR"
 					}
 				} else if (contentHTML.item(i).className.includes("text-token") 
                     || contentHTML.item(i).className.includes("mention-token") 
@@ -145,7 +157,18 @@ export async function twitch(page: Page): Promise<Chat[]> {
 			}
         })
     }) ?? []
-	return chat.reverse().filter(el => el.userName !== "ERR" || el.content.length !== 0)
+	return chat
+        .reverse()
+        .filter(el => el.userName !== "ERR" || el.content.length !== 0)
+        .map(el => {
+            if (!el.emoteContainer) return el
+            
+            for (const key of Object.keys(el.emoteContainer)) {
+                el.emoteContainer[key] = emojis[key as keyof Emojis] ? emojis[key as keyof Emojis].emojiBlob : el.emoteContainer[key]
+            }
+
+            return el
+        })
 }
 
 export async function twitter(page: Page): Promise<Chat[]> {

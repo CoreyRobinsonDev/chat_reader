@@ -4,6 +4,7 @@
     "": {
       "name": "chat_reader",
       "dependencies": {
+        "@coreyrobinsondev/emoji": "^1.0.8",
         "@radix-ui/react-avatar": "^1.1.9",
         "@radix-ui/react-popover": "^1.1.7",
         "@radix-ui/react-slot": "^1.2.0",
@@ -36,6 +37,8 @@
     "@babel/code-frame": ["@babel/code-frame@7.26.2", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.25.9", "js-tokens": "^4.0.0", "picocolors": "^1.0.0" } }, "sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ=="],
 
     "@babel/helper-validator-identifier": ["@babel/helper-validator-identifier@7.25.9", "", {}, "sha512-Ed61U6XJc3CVRfkERJWDz4dJwKe7iLmmJsbOGu9wSloNSFttHV0I8g6UAgb7qnK5ly5bGLPd4oXZlxCdANBOWQ=="],
+
+    "@coreyrobinsondev/emoji": ["@coreyrobinsondev/emoji@1.0.8", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-PW2D07HH1ksGiGrH0JyftMMSZsznHE+ZNJs6lU7Y/ZCpts9aaZvBQdSxPCYtuSDASPOlKkrZVi35YBW81AUsGA=="],
 
     "@floating-ui/core": ["@floating-ui/core@1.6.9", "", { "dependencies": { "@floating-ui/utils": "^0.2.9" } }, "sha512-uMXCuQ3BItDUbAMhIXw7UPXRfAlOAvZzdK9BWpE60MCn+Svt3aLn9jsPTi/WNGlRUu2uI0v5S7JiIUsbsvh3fw=="],
 
