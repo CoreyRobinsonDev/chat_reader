@@ -1,5 +1,5 @@
 import { getChat, getProfile, goto, initBrowser } from "./backend/scrape.ts";
-import { log, Resp, tryCatch, unwrap } from "./backend/util.ts";
+import { LinkedList, Node, log, Resp, tryCatch, unwrap } from "./backend/util.ts";
 import { SocketCode, type WebSocketData, Platform } from "./backend/types.ts";
 import index from "./frontend/index.html" 
 import type { RouterTypes } from "bun";
@@ -24,6 +24,26 @@ const s = Bun.serve<WebSocketData, Routes>({
         "/health/downstream": async () => {
             const kickRes = await fetch("https://kick.com")
             const twitchRes = await fetch("https://twitch.tv")
+
+            const ll = new LinkedList<number>
+            log.debug(ll.toString())
+            ll.addFront(new Node(3))
+            ll.addFront(new Node(2))
+            ll.addFront(new Node(1))
+            log.debug(ll.toString())
+            log.debug(ll.removeFront())
+            log.debug(ll.removeBack())
+            log.debug(ll.toString())
+            log.debug(ll.removeBack())
+            log.debug(ll.removeBack())
+            log.debug(ll.toString())
+            ll.addBack(new Node(1))
+            ll.addBack(new Node(2))
+            ll.addBack(new Node(3))
+            log.debug(ll.removeFront())
+            log.debug(ll.removeFront())
+            log.debug(ll.removeFront())
+            log.debug(ll.toString())
 
             return Response.json({
                 status: 200,

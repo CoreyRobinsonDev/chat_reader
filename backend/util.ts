@@ -163,3 +163,106 @@ export function Ok<T>(data: T): Success<T> {
 export function Err(error: Error): Failure<Error> {
     return [  undefined, error ]
 }
+
+export class Node<T> {
+    value: T | undefined
+    next: Node<T> | undefined
+
+    constructor(value: T) {
+        this.value = value
+    }
+
+    toString(): string {
+        return `Node{value:${this.value}, next:${this.next}}`
+    }
+}
+
+export class LinkedList<T> {
+    #head: Node<T> | undefined
+    #tail: Node<T> | undefined
+
+    addFront(node: Node<T>) {
+        if (this.#head) {
+            this.#head.next = node
+            this.#head = node
+        } else {
+            this.#head = node
+            this.#tail = node
+        }
+    }
+
+    addBack(node: Node<T>) {
+        if (this.#tail) {
+            node.next = this.#tail  
+        } else {
+            this.#head = node
+            this.#tail = node
+        }
+    }
+
+    removeFront(): Result<Node<T>> {
+        if (!this.#head) return Err(new Error("LinkedList.removeFront call on headless list"))
+        if (!this.#tail) return Err(new Error("LinkedList.removeFront call on tailless list with a head, somehow"))
+        if (this.#head === this.#tail) {
+            let head = this.#head
+            this.#head = undefined
+            this.#tail = undefined
+
+            return Ok(head)
+        }
+
+        let node = this.#tail
+        let head = this.#head
+        this.#head = undefined
+
+        while (node.next) {
+            if (node.next === head) {
+                node.next = undefined
+                this.#head = node
+                break
+            }
+            node = node.next
+        }
+        
+        return Ok(head)
+    }
+
+    removeBack(): Result<Node<T>> {
+        if (!this.#head) return Err(new Error("LinkedList.removeBack call on headless list"))
+        if (!this.#tail) return Err(new Error("LinkedList.removeBack call on tailless list with a head, somehow"))
+        if (this.#head === this.#tail) {
+            let tail = this.#tail
+            this.#head = undefined
+            this.#tail = undefined
+
+            return Ok(tail)
+        }
+        let tail = this.#tail
+        this.#tail = tail.next
+
+        return Ok(tail)
+    }
+
+    toString(): string {
+        return `LinkedList{head:${this.#head}, tail:${this.#tail}}`
+    }
+
+}
+
+export class Queue<T> {
+    buffer = []
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
